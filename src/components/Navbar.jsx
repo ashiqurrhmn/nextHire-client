@@ -10,13 +10,13 @@ export default function Navbar() {
   return (
     <nav className="sticky top-0 z-50 w-full bg-transparent px-4 sm:px-6 lg:px-8 py-4">
       {/* Floating Glassmorphic Container */}
-      <div className="mx-auto max-w-7xl rounded-[20px] bg-[#161618] border border-zinc-800/70 backdrop-blur-md px-6 py-3 shadow-[0_8px_32px_rgba(0,0,0,0.4)] transition-all duration-300">
+      <div className="mx-auto max-w-7xl rounded-[20px] border border-zinc-800/70 bg-zinc-900/80 backdrop-blur-md px-6 py-3 shadow-[0_8px_32px_rgba(0,0,0,0.4)] transition-all duration-300">
         <div className="flex items-center justify-between">
           {/* Logo on the left */}
           <Link href="/" className="flex items-center gap-2 outline-none">
             <Image
               src="/Assets/logo.png"
-              alt="Hireloop"
+              alt="NextHire Logo"
               width={140}
               height={36}
               priority

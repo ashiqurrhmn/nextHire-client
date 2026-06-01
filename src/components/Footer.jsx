@@ -5,7 +5,7 @@ import Link from "next/link";
 
 export default function Footer() {
   return (
-    <footer className="relative mt-auto w-full bg-[#0B0B0C] border-t border-zinc-900 pt-16 pb-8 overflow-hidden">
+    <footer className="relative mt-auto w-full  border-t border-zinc-900 pt-16 pb-8 overflow-hidden">
       {/* Background glowing ambient light */}
       <div className="absolute top-0 left-1/4 -translate-y-1/2 w-72 h-72 bg-[#0088FF]/5 rounded-full blur-[100px] pointer-events-none" />
       <div className="absolute top-0 right-1/4 -translate-y-1/2 w-72 h-72 bg-[#FF5E00]/5 rounded-full blur-[100px] pointer-events-none" />

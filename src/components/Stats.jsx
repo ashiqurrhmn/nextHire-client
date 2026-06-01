@@ -51,7 +51,7 @@ const Stats = () => {
           {stats.map((stat) => (
             <article
               key={stat.label}
-              className="flex h-[186px] flex-col justify-between rounded-lg border border-white/[0.08] bg-[linear-gradient(180deg,rgba(3,3,4,0.94)_0%,rgba(19,19,20,0.92)_100%)] p-4 shadow-[0_24px_70px_rgba(0,0,0,0.5)] backdrop-blur-xl"
+              className="flex h-[186px] flex-col justify-between rounded-lg border border-white/[0.08] bg-black/60 p-4 shadow-[0_24px_70px_rgba(0,0,0,0.5)] backdrop-blur-sm"
             >
               <StatIcon type={stat.icon} />
               <div>

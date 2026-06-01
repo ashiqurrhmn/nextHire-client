@@ -59,13 +59,13 @@ export default function Navbar() {
             {/* Actions */}
             <div className="flex items-center gap-5">
               <Link
-                href="#"
+                href="/auth/signin"
                 className="text-[14px] font-semibold text-[#FF5E00] hover:text-[#FFA000] transition-colors duration-200"
               >
                 Sign In
               </Link>
               <Link
-                href="#"
+                href="/auth/signup"
                 className="inline-flex items-center justify-center px-5 py-2.5 text-[14px] font-semibold text-white bg-gradient-to-r from-[#0088FF] to-[#0055FF] rounded-xl hover:from-[#339FFF] hover:to-[#2277FF] active:scale-98 shadow-[0_4px_14px_rgba(0,136,255,0.25)] hover:shadow-[0_6px_20px_rgba(0,136,255,0.4)] transition-all duration-300"
               >
                 Get Started
@@ -138,14 +138,14 @@ export default function Navbar() {
               <div className="h-[1px] bg-zinc-800/80 my-1 mx-3" />
               <li className="flex flex-col gap-2.5 px-3 pt-2">
                 <Link
-                  href="#"
+                  href="/auth/signin"
                   onClick={() => setIsMenuOpen(false)}
                   className="text-center py-2.5 text-base font-semibold text-[#FF5E00] hover:text-[#FFA000] transition-colors"
                 >
                   Sign In
                 </Link>
                 <Link
-                  href="#"
+                  href="/auth/signup"
                   onClick={() => setIsMenuOpen(false)}
                   className="inline-flex items-center justify-center w-full py-3 text-sm font-medium text-white bg-gradient-to-r from-[#0088FF] to-[#0055FF] rounded-xl hover:from-[#339FFF] hover:to-[#2277FF] shadow-lg transition-all"
                 >

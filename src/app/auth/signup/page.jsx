@@ -4,6 +4,7 @@ import { useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Button, Card, Checkbox, Input, Label, TextField } from "@heroui/react";
+import { Description, Radio, RadioGroup } from "@heroui/react";
 import {
   ArrowRight,
   Envelope,
@@ -26,13 +27,14 @@ export default function SignUpPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
+  const [role, setRole] = useState("seeker");
 
   const passwordMismatch = useMemo(
     () =>
       password.length > 0 &&
       confirmPassword.length > 0 &&
       password !== confirmPassword,
-    [password, confirmPassword]
+    [password, confirmPassword],
   );
 
   const handleSubmit = async (event) => {
@@ -56,6 +58,7 @@ export default function SignUpPage() {
       const { error } = await signUp.email({
         name: fullName.trim(),
         email: email.trim(),
+        role,
         password,
       });
 
@@ -65,7 +68,7 @@ export default function SignUpPage() {
       }
 
       setSuccessMessage("Account created successfully!");
-      router.push("/auth/signin");
+      router.push("/");
     } catch (error) {
       setErrorMessage(error?.message || "Could not create account.");
     } finally {
@@ -90,13 +93,11 @@ export default function SignUpPage() {
           <h1 className="max-w-xl text-4xl font-semibold leading-[1.05] tracking-tight text-white sm:text-5xl">
             Create your account and start hiring or applying faster.
           </h1>
-          
-          
         </div>
 
         <Card className="border border-zinc-800/80 bg-zinc-900/50 p-10 shadow-[0_20px_80px_rgba(0,0,0,0.45)] backdrop-blur-sm">
           <Card.Header className="py-3">
-            <div className= "text-center">
+            <div className="text-center">
               <h2 className="text-2xl font-semibold text-white">Sign up</h2>
               <p className="mt-1 text-sm text-zinc-400">
                 Join NextHire with your work-ready profile.
@@ -151,6 +152,34 @@ export default function SignUpPage() {
                 }
                 isInvalid={passwordMismatch}
               />
+              <div className="flex flex-col gap-4">
+                <Label>Subscription plan</Label>
+                <RadioGroup
+                onChange = {value => setRole(value)}
+                  defaultValue="seeker"
+                  name="role"
+                  orientation="horizontal"
+                >
+                  <Radio value="seeker">
+                    <Radio.Control>
+                      <Radio.Indicator />
+                    </Radio.Control>
+                    <Radio.Content>
+                      <Label>Job Seeker</Label>
+                      
+                    </Radio.Content>
+                  </Radio>
+                  <Radio value="recruiter">
+                    <Radio.Control>
+                      <Radio.Indicator />
+                    </Radio.Control>
+                    <Radio.Content>
+                      <Label>Recruiter</Label>
+                      
+                    </Radio.Content>
+                  </Radio>
+                </RadioGroup>
+              </div>
 
               <Checkbox
                 isSelected={acceptTerms}
@@ -177,11 +206,17 @@ export default function SignUpPage() {
                 </Checkbox.Control>
                 <Checkbox.Content className="text-sm flex flex-row gap-1 flex-wrap text-zinc-300">
                   I agree to the{" "}
-                  <Link href="#" className="text-[#0088FF] hover:text-[#56ABFF]">
+                  <Link
+                    href="#"
+                    className="text-[#0088FF] hover:text-[#56ABFF]"
+                  >
                     Terms
                   </Link>{" "}
                   and{" "}
-                  <Link href="#" className="text-[#0088FF] hover:text-[#56ABFF]">
+                  <Link
+                    href="#"
+                    className="text-[#0088FF] hover:text-[#56ABFF]"
+                  >
                     Privacy Policy
                   </Link>
                   .
@@ -221,7 +256,10 @@ export default function SignUpPage() {
           <Card.Footer className="flex justify-center pb-6 pt-4">
             <p className="text-sm text-zinc-400">
               Already have an account?{" "}
-              <Link href="/auth/signin" className="text-[#FF8A3D] hover:text-[#FFA15F]">
+              <Link
+                href="/auth/signin"
+                className="text-[#FF8A3D] hover:text-[#FFA15F]"
+              >
                 Sign in
               </Link>
             </p>
@@ -244,7 +282,9 @@ function Field({
 }) {
   return (
     <TextField className="w-full" name={id} isRequired>
-      <Label className="mb-1.5 text-sm font-medium text-zinc-200">{label}</Label>
+      <Label className="mb-1.5 text-sm font-medium text-zinc-200">
+        {label}
+      </Label>
       <div className="relative">
         <div className="pointer-events-none absolute left-3 top-1/2 z-10 -translate-y-1/2">
           {icon}
@@ -276,7 +316,9 @@ function PasswordField({
 }) {
   return (
     <TextField className="w-full" name={id} isRequired>
-      <Label className="mb-1.5 text-sm font-medium text-zinc-200">{label}</Label>
+      <Label className="mb-1.5 text-sm font-medium text-zinc-200">
+        {label}
+      </Label>
       <div className="relative">
         <div className="pointer-events-none absolute left-3 top-1/2 z-10 -translate-y-1/2">
           <Lock className="h-4 w-4 text-zinc-400" />

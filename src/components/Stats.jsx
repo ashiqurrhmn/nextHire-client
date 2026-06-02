@@ -1,4 +1,7 @@
+"use client";
+
 import Image from "next/image";
+import { motion } from "framer-motion";
 
 const Stats = () => {
   const stats = [
@@ -24,34 +27,93 @@ const Stats = () => {
     },
   ];
 
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.1,
+      },
+    },
+  };
+
+  const itemVariants = {
+    hidden: { opacity: 0, y: 30 },
+    visible: {
+      opacity: 1,
+      y: 0,
+      transition: {
+        type: "spring",
+        stiffness: 70,
+        damping: 15,
+      },
+    },
+  };
+
   return (
     <section className="relative isolate min-h-180 overflow-hidden px-5 pt-24 pb-8 sm:min-h-[680px] md:min-h-160 md:px-8 md:pt-0">
       <div className="absolute inset-0 -z-10 overflow-hidden">
-        <Image
-          src="/Assets/globe.png"
-          alt=""
-          width={1440}
-          height={1882}
-          className="absolute left-1/2 top-0 h-auto w-245 max-w-none -translate-x-1/2 -translate-y-[300px] select-none opacity-90 sm:w-[1120px] sm:-translate-y-[420px] md:w-[1110px] md:-translate-y-[482px] lg:w-[1180px] lg:-translate-y-[520px]"
-          priority
-        />
+        {/* Globe positioning wrapper */}
+        <div className="absolute left-1/2 top-0 h-auto w-245 max-w-none -translate-x-1/2 -translate-y-[300px] select-none sm:w-[1120px] sm:-translate-y-[420px] md:w-[1110px] md:-translate-y-[482px] lg:w-[1180px] lg:-translate-y-[520px]">
+          {/* Continuous Zooming motion.div */}
+          <motion.div
+            animate={{
+              scale: [0.97, 1.06, 0.97],
+              opacity: [0.8, 0.95, 0.8],
+            }}
+            transition={{
+              duration: 16,
+              repeat: Infinity,
+              repeatType: "mirror",
+              ease: "easeInOut",
+            }}
+            className="w-full h-full"
+          >
+            <Image
+              src="/Assets/globe.png"
+              alt=""
+              width={1440}
+              height={1882}
+              className="w-full h-full object-contain"
+              priority
+            />
+          </motion.div>
+        </div>
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(0,0,0,0)_18%,rgba(0,0,0,0.18)_58%,rgba(0,0,0,0.92)_100%)]" />
         <div className="absolute inset-x-0 bottom-0 h-56 bg-gradient-to-t from-black via-black/70 to-transparent" />
         <div className="absolute inset-x-0 top-0 h-36 bg-gradient-to-b from-black via-black/60 to-transparent" />
       </div>
 
-      <div className="relative z-10 mx-auto flex min-h-[620px] w-full max-w-[968px] flex-col justify-end sm:min-h-[600px] md:min-h-[540px]">
-        <h2 className="mx-auto mb-9 max-w-[560px] text-center text-[27px] font-light leading-[1.36] tracking-[-0.01em] text-white/72 sm:text-[30px]">
+      <motion.div 
+        variants={containerVariants}
+        initial="hidden"
+        whileInView="visible"
+        viewport={{ once: false }}
+        className="relative z-10 mx-auto flex min-h-[620px] w-full max-w-[968px] flex-col justify-end sm:min-h-[600px] md:min-h-[540px]"
+      >
+        <motion.h2 
+          variants={itemVariants}
+          viewport={{ once: false }}
+          className="mx-auto mb-9 max-w-[560px] text-center text-[27px] font-light leading-[1.36] tracking-[-0.01em] text-white/72 sm:text-[30px]"
+        >
           Assisting over{" "}
           <span className="font-normal text-white">15,000</span> job seekers
           <br className="hidden sm:block" /> find their dream positions.
-        </h2>
+        </motion.h2>
 
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {stats.map((stat) => (
-            <article
+            <motion.article
               key={stat.label}
-              className="flex h-[186px] flex-col justify-between rounded-lg border border-white/[0.08] bg-black/60 p-4 shadow-[0_24px_70px_rgba(0,0,0,0.5)] backdrop-blur-sm"
+              viewport={{ once: false }}
+              variants={itemVariants}
+              whileHover={{ 
+                y: -6, 
+                borderColor: "rgba(255, 255, 255, 0.2)",
+                boxShadow: "0 30px 80px rgba(0, 136, 255, 0.15)",
+                backgroundColor: "rgba(10, 10, 12, 0.8)"
+              }}
+              className="flex h-[186px] flex-col justify-between rounded-lg border border-white/[0.08] bg-black/60 p-4 shadow-[0_24px_70px_rgba(0,0,0,0.5)] backdrop-blur-sm transition-colors duration-300"
             >
               <StatIcon type={stat.icon} />
               <div>
@@ -62,10 +124,10 @@ const Stats = () => {
                   {stat.label}
                 </p>
               </div>
-            </article>
+            </motion.article>
           ))}
         </div>
-      </div>
+      </motion.div>
     </section>
   );
 };

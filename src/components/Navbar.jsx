@@ -14,6 +14,7 @@ export default function Navbar() {
   const user = session?.user;
   const isAuthenticated = !isPending && Boolean(user);
   const userName = user?.name || user?.email || "User";
+  // console.log(session);
 
   const handleSignOut = async () => {
     setIsSigningOut(true);

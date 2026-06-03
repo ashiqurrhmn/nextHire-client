@@ -9,6 +9,13 @@ import { Button, Drawer } from "@heroui/react";
 import { signOut, useSession } from "@/lib/auth-client";
 
 // Custom SVG Icons matching the design
+const HomeIcon = (props) => (
+  <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round" {...props}>
+    <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
+    <polyline points="9 22 9 12 15 12 15 22" />
+  </svg>
+);
+
 const GridIcon = (props) => (
   <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round" {...props}>
     <rect x="3" y="3" width="7" height="7" />
@@ -95,6 +102,7 @@ export function DashboardSideBar() {
   const getNavItems = () => {
     if (userRole === "recruiter") {
       return [
+        { icon: HomeIcon, label: "Home", href: "/" },
         { icon: GridIcon, label: "Dashboard", href: "/dashboard/recruiter" },
         { icon: CompanyIcon, label: "My Company", href: "/dashboard/recruiter/company" },
         { icon: BriefcaseIcon, label: "Manage Jobs", href: "/dashboard/recruiter/manage-jobs" },
@@ -104,6 +112,7 @@ export function DashboardSideBar() {
     }
 
     return [
+      { icon: HomeIcon, label: "Home", href: "/" },
       { icon: GridIcon, label: "Dashboard", href: "/dashboard" },
       { icon: BriefcaseIcon, label: "Browse Jobs", href: "/jobs" },
       { icon: FileTextIcon, label: "Applications", href: "/dashboard/applications" },
@@ -114,6 +123,9 @@ export function DashboardSideBar() {
   const navItems = getNavItems();
 
   const isActive = (href) => {
+    if (href === "/") {
+      return pathname === "/";
+    }
     if (href === "/dashboard" || href === "/dashboard/recruiter") {
       return pathname === href;
     }
@@ -233,7 +245,7 @@ export function DashboardSideBar() {
       {/* Mobile Sticky Header Bar */}
       <div className="lg:hidden flex items-center justify-between w-full border-b border-zinc-900 bg-zinc-950/80 backdrop-blur-md px-4 py-3 sticky top-0 z-40">
         <Link href="/" className="flex items-center gap-2">
-          <span className="text-xl font-bold tracking-tight text-white">NextHire</span>
+          <Image src="/assets/logo.png" alt="Logo" width={120} height={80} />
         </Link>
 
         <Drawer>
@@ -253,7 +265,7 @@ export function DashboardSideBar() {
                 <Drawer.CloseTrigger className="absolute right-4 top-4 text-zinc-400 hover:text-white" />
                 <Drawer.Header className="pt-2 pb-4 border-b border-zinc-900">
                   <Drawer.Heading className="text-lg font-bold text-white flex items-center gap-2">
-                    <span>NextHire</span>
+                    <Image src="/assets/logo.png" alt="Logo" width={120} height={80} />
                   </Drawer.Heading>
                 </Drawer.Header>
                 <Drawer.Body className="flex-1 py-4 overflow-y-auto">

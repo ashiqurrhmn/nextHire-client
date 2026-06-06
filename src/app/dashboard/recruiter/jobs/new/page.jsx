@@ -1,695 +1,597 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
-import Link from "next/link";
+import React, { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Button, Card, Input, Label, TextField } from "@heroui/react";
 import {
-  ArrowLeft,
+  Button,
+  FieldError,
+  Fieldset,
+  Form,
+  Input,
+  Label,
+  ListBox,
+  Select,
+  Switch,
+  TextArea,
+  TextField,
+  toast,
+} from "@heroui/react";
+import {
   Briefcase,
-  House,
   Calendar,
-  Tag,
-  Globe,
+  Check,
   CircleCheck,
-  CircleExclamation
+  Clock,
+  FileText,
+  Globe,
+  MapPin,
+  Rocket,
+  Sparkles,
+  TagDollar,
 } from "@gravity-ui/icons";
-import { useSession } from "@/lib/auth-client";
+import { createJob } from "@/lib/actions/jobs";
 
-const JOB_TYPES = [
-  { id: "Full-time", label: "Full-time", description: "Standard hours" },
-  { id: "Part-time", label: "Part-time", description: "Flexible hours" },
-  { id: "Remote", label: "Remote", description: "Work from anywhere" },
-  { id: "Contract", label: "Contract", description: "Project-based" },
-  { id: "Internship", label: "Internship", description: "For students" },
+const categories = [
+  { id: "technology", label: "Technology" },
+  { id: "design", label: "Design" },
+  { id: "marketing", label: "Marketing" },
+  { id: "sales", label: "Sales" },
 ];
 
-const CURRENCIES = [
-  { id: "USD", symbol: "$", name: "US Dollar" },
-  { id: "EUR", symbol: "€", name: "Euro" },
-  { id: "GBP", symbol: "£", name: "British Pound" },
-  { id: "BDT", symbol: "৳", name: "Bangladeshi Taka" },
-  { id: "INR", symbol: "₹", name: "Indian Rupee" },
-  { id: "CAD", symbol: "C$", name: "Canadian Dollar" },
+const jobTypes = [
+  { id: "full-time", label: "Full-time" },
+  { id: "part-time", label: "Part-time" },
+  { id: "contract", label: "Contract" },
+  { id: "internship", label: "Internship" },
 ];
 
-export default function NewJobPage() {
+const currencies = [
+  { id: "USD", label: "USD" },
+  { id: "EUR", label: "EUR" },
+  { id: "GBP", label: "GBP" },
+];
+
+const publishingSteps = [
+  "Company profile verified",
+  "Role details completed",
+  "Compensation range added",
+  "Screening content ready",
+];
+
+function SectionHeading({ icon: Icon, title, subtitle }) {
+  return (
+    <div className="flex items-start gap-3 border-b border-zinc-900 pb-4">
+      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-[#0088FF]/25 bg-[#0088FF]/10 text-[#0088FF]">
+        <Icon size={18} />
+      </div>
+      <div>
+        <h2 className="text-base font-bold text-white">{title}</h2>
+        <p className="mt-1 text-sm leading-6 text-zinc-500">{subtitle}</p>
+      </div>
+    </div>
+  );
+}
+
+export default function PostJobPage() {
   const router = useRouter();
-  const { data: session, isPending: isSessionLoading } = useSession();
-  
-  // Loading & State
-  const [isCompanyLoading, setIsCompanyLoading] = useState(true);
-  const [company, setCompany] = useState(null);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [errorMessage, setErrorMessage] = useState("");
-  const [successMessage, setSuccessMessage] = useState("");
 
-  // Company registration state (if recruiter has no company)
-  const [companyName, setCompanyName] = useState("");
-  const [companyCategory, setCompanyCategory] = useState("");
-  const [isRegisteringCompany, setIsRegisteringCompany] = useState(false);
+  const [mockCompany] = useState({
+    name: "Acme Corp",
+    id: "company_123",
+    isApproved: true,
+  });
 
-  // Job form state
-  const [title, setTitle] = useState("");
-  const [category, setCategory] = useState("");
-  const [jobType, setJobType] = useState("Full-time");
-  const [salaryMin, setSalaryMin] = useState("");
-  const [salaryMax, setSalaryMax] = useState("");
-  const [currency, setCurrency] = useState("USD");
   const [isRemote, setIsRemote] = useState(false);
-  const [city, setCity] = useState("");
-  const [country, setCountry] = useState("");
-  const [deadline, setDeadline] = useState("");
-  const [responsibilities, setResponsibilities] = useState("");
-  const [requirements, setRequirements] = useState("");
-  const [benefits, setBenefits] = useState("");
+  const [errors, setErrors] = useState({});
 
-  // Fetch recruiter's company
-  useEffect(() => {
-    if (session?.user && session.user.role === "recruiter") {
-      fetchCompany();
-    } else if (!isSessionLoading && !session?.user) {
-      setIsCompanyLoading(false);
-    } else {
-      setIsCompanyLoading(false);
-    }
-  }, [session, isSessionLoading]);
-
-  const fetchCompany = async () => {
-    setIsCompanyLoading(true);
-    try {
-      const res = await fetch("/api/recruiter/company");
-      if (res.ok) {
-        const data = await res.json();
-        setCompany(data.company);
-      }
-    } catch (err) {
-      console.error("Error fetching company:", err);
-    } finally {
-      setIsCompanyLoading(false);
-    }
-  };
-
-  // Register a mock company for the recruiter
-  const handleRegisterCompany = async (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    setErrorMessage("");
-    if (!companyName.trim() || !companyCategory.trim()) {
-      setErrorMessage("Please fill in all company fields.");
+    const form = e.currentTarget;
+
+    if (!mockCompany.isApproved) {
+      alert("Your company profile must be approved before you can post jobs.");
       return;
     }
 
-    setIsRegisteringCompany(true);
-    try {
-      const res = await fetch("/api/recruiter/company", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          name: companyName.trim(),
-          category: companyCategory.trim(),
-        }),
-      });
+    const formData = new FormData(form);
+    const data = Object.fromEntries(formData.entries());
 
-      const data = await res.json();
-      if (!res.ok) {
-        throw new Error(data.error || "Failed to register company.");
+    const newErrors = {};
+
+    // 1. Job Title Validation
+    if (!data.jobTitle) {
+      newErrors.jobTitle = "Job title is required";
+    } else if (data.jobTitle.trim().length < 3) {
+      newErrors.jobTitle = "Job title must be at least 3 characters";
+    }
+
+    // 2. Job Category Validation
+    if (!data.jobCategory) {
+      newErrors.jobCategory = "Job category is required";
+    }
+
+    // 3. Job Type Validation
+    if (!data.jobType) {
+      newErrors.jobType = "Job type is required";
+    }
+
+    // 4. Min Salary Validation
+    if (!data.minSalary) {
+      newErrors.minSalary = "Minimum salary is required";
+    } else {
+      const minVal = Number(data.minSalary);
+      if (isNaN(minVal) || minVal <= 0) {
+        newErrors.minSalary = "Minimum salary must be a positive number";
       }
+    }
 
-      setCompany(data.company);
-      setSuccessMessage("Company profile registered and approved successfully!");
-      // clear success message after 3 seconds
-      setTimeout(() => setSuccessMessage(""), 3000);
-    } catch (err) {
-      setErrorMessage(err.message || "An error occurred during registration.");
-    } finally {
-      setIsRegisteringCompany(false);
+    // 5. Max Salary Validation
+    if (!data.maxSalary) {
+      newErrors.maxSalary = "Maximum salary is required";
+    } else {
+      const maxVal = Number(data.maxSalary);
+      const minVal = Number(data.minSalary);
+      if (isNaN(maxVal) || maxVal <= 0) {
+        newErrors.maxSalary = "Maximum salary must be a positive number";
+      } else if (!isNaN(minVal) && maxVal <= minVal) {
+        newErrors.maxSalary = "Maximum salary must be greater than minimum salary";
+      }
+    }
+
+    // 6. Location Validation
+    if (!isRemote) {
+      if (!data.location) {
+        newErrors.location = "Location is required for non-remote roles";
+      } else if (data.location.trim().length < 3) {
+        newErrors.location = "Location must be at least 3 characters";
+      }
+    }
+
+    // 7. Deadline Validation
+    if (!data.deadline) {
+      newErrors.deadline = "Application deadline is required";
+    } else {
+      const today = new Date();
+      const year = today.getFullYear();
+      const month = String(today.getMonth() + 1).padStart(2, '0');
+      const day = String(today.getDate()).padStart(2, '0');
+      const todayStr = `${year}-${month}-${day}`;
+      if (data.deadline < todayStr) {
+        newErrors.deadline = "Application deadline cannot be in the past";
+      }
+    }
+
+    // 8. Responsibilities Validation
+    if (!data.responsibilities) {
+      newErrors.responsibilities = "Responsibilities are required";
+    } else if (data.responsibilities.trim().length < 10) {
+      newErrors.responsibilities = "Responsibilities must be at least 10 characters";
+    }
+
+    // 9. Requirements Validation
+    if (!data.requirements) {
+      newErrors.requirements = "Requirements are required";
+    } else if (data.requirements.trim().length < 10) {
+      newErrors.requirements = "Requirements must be at least 10 characters";
+    }
+
+    if (Object.keys(newErrors).length > 0) {
+      setErrors(newErrors);
+      return;
+    }
+
+    setErrors({});
+
+    const payload = {
+      ...data,
+      isRemote,
+      companyId: mockCompany.id,
+      status: "active",
+      isPubliclyVisible: true,
+    };
+
+    const res = await createJob(payload);
+    if (res?.error) {
+      toast.error(res.error);
+      return;
+    }
+
+    if (res?.insertedId) {
+      toast.success("Job posted successfully!");
+      form.reset();
+      setIsRemote(false);
+      router.push("/dashboard/recruiter");
     }
   };
 
-  // Submit the Job post
-  const handleSubmitJob = async (e) => {
-    e.preventDefault();
-    setErrorMessage("");
-    setSuccessMessage("");
+  const getInputClass = (isInvalid) =>
+    `w-full h-12 rounded-xl border bg-zinc-950/80 px-3 text-sm text-white outline-none transition-all placeholder:text-zinc-600 hover:bg-zinc-950 focus:shadow-[0_0_0_3px_rgba(0,136,255,0.12)] disabled:cursor-not-allowed disabled:opacity-60 ${
+      isInvalid
+        ? "border-red-500/60 hover:border-red-500 focus:border-red-500/80 focus:shadow-[0_0_0_3px_rgba(239,68,68,0.12)]"
+        : "border-zinc-800 hover:border-zinc-700 focus:border-[#0088FF]/60 focus:shadow-[0_0_0_3px_rgba(0,136,255,0.12)]"
+    }`;
 
-    // Validations
-    if (!title.trim()) return setErrorMessage("Job Title is required.");
-    if (!category.trim()) return setErrorMessage("Job Category is required.");
-    if (!jobType) return setErrorMessage("Job Type is required.");
-    if (!deadline) return setErrorMessage("Application Deadline is required.");
-    if (!responsibilities.trim()) return setErrorMessage("Responsibilities are required.");
-    if (!requirements.trim()) return setErrorMessage("Requirements are required.");
+  const getTextAreaClass = (isInvalid) =>
+    `w-full rounded-xl border bg-zinc-950/80 p-3 text-sm text-white outline-none transition-all placeholder:text-zinc-600 hover:bg-zinc-950 focus:shadow-[0_0_0_3px_rgba(0,136,255,0.12)] ${
+      isInvalid
+        ? "border-red-500/60 hover:border-red-500 focus:border-red-500/80 focus:shadow-[0_0_0_3px_rgba(239,68,68,0.12)]"
+        : "border-zinc-800 hover:border-zinc-700 focus:border-[#0088FF]/60 focus:shadow-[0_0_0_3px_rgba(0,136,255,0.12)]"
+    }`;
+  const labelClass = "text-sm font-semibold text-zinc-300";
+  const helperClass = "text-xs leading-5 text-zinc-500";
+  const triggerClasses =
+    "flex h-12 w-full items-center justify-between rounded-xl border border-zinc-800 bg-zinc-950/80 px-3 text-sm text-white outline-none transition-all hover:border-zinc-700 hover:bg-zinc-950 data-[focused=true]:border-[#0088FF]/60 data-[focused=true]:shadow-[0_0_0_3px_rgba(0,136,255,0.12)] data-[invalid=true]:border-red-500/60";
+  const popoverClasses = "rounded-xl border border-zinc-800 bg-[#0a0a0c] p-1 text-white shadow-2xl";
+  const listItemClasses =
+    "flex cursor-pointer items-center justify-between rounded-lg p-2 text-sm text-zinc-300 outline-none transition-colors hover:bg-zinc-900 data-[focused=true]:bg-zinc-900";
 
-    if (salaryMin && salaryMax && Number(salaryMin) > Number(salaryMax)) {
-      return setErrorMessage("Minimum salary cannot be greater than maximum salary.");
-    }
-
-    if (!isRemote && (!city.trim() || !country.trim())) {
-      return setErrorMessage("Location (City and Country) is required for non-remote positions.");
-    }
-
-    setIsSubmitting(true);
-    try {
-      const res = await fetch("/api/jobs", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          title,
-          category,
-          type: jobType,
-          salaryMin: salaryMin ? Number(salaryMin) : null,
-          salaryMax: salaryMax ? Number(salaryMax) : null,
-          currency,
-          isRemote,
-          location: isRemote ? null : { city: city.trim(), country: country.trim() },
-          deadline,
-          responsibilities,
-          requirements,
-          benefits,
-        }),
-      });
-
-      const data = await res.json();
-      if (!res.ok) {
-        throw new Error(data.error || "Failed to post job.");
-      }
-
-      setSuccessMessage("Job posted successfully! Redirecting...");
-      // console.log(data);
-      setTimeout(() => {
-        router.push("");
-      }, 2000);
-    } catch (err) {
-      setErrorMessage(err.message || "An error occurred while posting the job.");
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-  
-
-  // 1. Session Loading State
-  if (isSessionLoading || (session?.user && isCompanyLoading)) {
-    return (
-      <div className="flex flex-col items-center justify-center min-h-[60vh] gap-4">
-        <svg className="animate-spin h-8 w-8 text-[#0088FF]" fill="none" viewBox="0 0 24 24">
-          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
-        </svg>
-        <span className="text-sm font-medium text-zinc-400">Loading your profile...</span>
-      </div>
-    );
-  }
-
-  // 2. Unauthenticated State
-  if (!session?.user) {
-    return (
-      <div className="flex flex-col items-center justify-center min-h-[60vh] gap-6 max-w-md mx-auto text-center px-4">
-        <div className="h-16 w-16 rounded-2xl bg-red-500/10 border border-red-500/20 flex items-center justify-center text-red-500 text-3xl">
-          <CircleExclamation />
-        </div>
-        <div>
-          <h2 className="text-2xl font-bold text-white mb-2">Access Denied</h2>
-          <p className="text-sm text-zinc-400">
-            You must be logged in as a recruiter to post jobs on NextHire.
-          </p>
-        </div>
-        <Link href="/auth/signin" className="w-full">
-          <Button className="w-full h-12 bg-gradient-to-r from-[#0088FF] to-[#0055FF] text-white font-semibold shadow-lg shadow-[#0088FF]/20">
-            Sign In to Your Account
-          </Button>
-        </Link>
-      </div>
-    );
-  }
-
-  // 3. Unauthorized State (Not Recruiter)
-  if (session.user.role !== "recruiter") {
-    return (
-      <div className="flex flex-col items-center justify-center min-h-[60vh] gap-6 max-w-md mx-auto text-center px-4">
-        <div className="h-16 w-16 rounded-2xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-500 text-3xl">
-          <CircleExclamation />
-        </div>
-        <div>
-          <h2 className="text-2xl font-bold text-white mb-2">Recruiter Access Only</h2>
-          <p className="text-sm text-zinc-400">
-            Your account is registered as a {session.user.role || "seeker"}. Only recruiters can publish new job opportunities.
-          </p>
-        </div>
-        <Link href="/" className="w-full">
-          <Button className="w-full h-12 border border-zinc-800 text-zinc-300 hover:text-white font-semibold transition-colors">
-            Go back to Homepage
-          </Button>
-        </Link>
-      </div>
-    );
-  }
-
-  // 4. Recruiter has NO company profile
-  if (!company) {
-    return (
-      <section className="relative isolate py-6 max-w-2xl mx-auto px-4">
-        {/* Glow Background Elements */}
-        <div className="pointer-events-none absolute inset-0 -z-10 overflow-hidden">
-          <div className="absolute left-1/2 top-10 h-[350px] w-[350px] -translate-x-1/2 rounded-full bg-[#0088FF]/10 blur-[100px]" />
-          <div className="absolute -left-20 bottom-10 h-44 w-44 rounded-full bg-[#FF5E00]/10 blur-[80px]" />
-        </div>
-
-        {/* Back Link */}
-        <Link href="/dashboard/recruiter" className="inline-flex items-center gap-2 text-zinc-400 hover:text-white text-sm mb-6 transition-colors">
-          <ArrowLeft className="size-4" />
-          <span>Back to Dashboard</span>
-        </Link>
-
-        <Card className="border border-zinc-800/80 bg-zinc-900/40 p-8 shadow-2xl backdrop-blur-md">
-          <Card.Header className="pb-4 border-b border-zinc-850 flex flex-col gap-2">
-            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#0088FF]/10 border border-[#0088FF]/30 text-[#0088FF] text-2xl">
-              <House />
-            </div>
-            <h1 className="text-2xl font-bold text-white mt-2">Set up Company Profile</h1>
-            <p className="text-sm text-zinc-400">
-              NextHire requires an active, approved company profile to list your job posts. Create one in seconds to proceed.
-            </p>
-          </Card.Header>
-
-          <Card.Content className="pt-6">
-            <form onSubmit={handleRegisterCompany} className="space-y-5">
-              <TextField className="w-full" name="companyName" isRequired>
-                <Label className="mb-1.5 text-sm font-medium text-zinc-200 block">Company Name</Label>
-                <Input
-                  id="companyName"
-                  value={companyName}
-                  onChange={(e) => setCompanyName(e.target.value)}
-                  placeholder="e.g. Stripe Inc."
-                  className="h-12 w-full rounded-xl border border-zinc-700/70 bg-zinc-950/70 px-4 text-sm text-white outline-none transition-colors placeholder:text-zinc-550 focus:border-[#0088FF]/70"
-                />
-              </TextField>
-
-              <TextField className="w-full" name="companyCategory" isRequired>
-                <Label className="mb-1.5 text-sm font-medium text-zinc-200 block">Company Category</Label>
-                <Input
-                  id="companyCategory"
-                  value={companyCategory}
-                  onChange={(e) => setCompanyCategory(e.target.value)}
-                  placeholder="e.g. Fintech, Software, Biotech"
-                  className="h-12 w-full rounded-xl border border-zinc-700/70 bg-zinc-950/70 px-4 text-sm text-white outline-none transition-colors placeholder:text-zinc-550 focus:border-[#0088FF]/70"
-                />
-              </TextField>
-
-              {errorMessage && (
-                <div className="flex items-center gap-2.5 p-3.5 rounded-xl border border-red-500/25 bg-red-500/5 text-red-400 text-xs leading-relaxed">
-                  <CircleExclamation className="shrink-0 size-4" />
-                  <span>{errorMessage}</span>
-                </div>
-              )}
-
-              {successMessage && (
-                <div className="flex items-center gap-2.5 p-3.5 rounded-xl border border-emerald-500/25 bg-emerald-500/5 text-emerald-400 text-xs leading-relaxed">
-                  <CircleCheck className="shrink-0 size-4" />
-                  <span>{successMessage}</span>
-                </div>
-              )}
-
-              <Button
-                type="submit"
-                isDisabled={isRegisteringCompany || !companyName.trim() || !companyCategory.trim()}
-                className="w-full h-12 bg-gradient-to-r from-[#0088FF] to-[#0055FF] text-white font-semibold shadow-lg shadow-[#0088FF]/20"
-              >
-                {isRegisteringCompany ? "Registering & Approving..." : "Register & Approve Company"}
-              </Button>
-            </form>
-          </Card.Content>
-        </Card>
-      </section>
-    );
-  }
-
-  // 5. Active Recruiter with Approved Company Profile - SHOW JOB POST FORM
   return (
-    <section className="relative isolate py-6 max-w-6xl mx-auto px-4">
-      {/* Background Glows */}
-      <div className="pointer-events-none absolute inset-0 -z-10 overflow-hidden">
-        <div className="absolute right-10 top-10 h-[400px] w-[400px] rounded-full bg-[#0088FF]/10 blur-[120px]" />
-        <div className="absolute left-10 bottom-10 h-[300px] w-[300px] rounded-full bg-[#FF5E00]/5 blur-[100px]" />
+    <div className="flex min-h-full flex-col gap-6 pb-8">
+      <div className="flex flex-col gap-5 rounded-2xl border border-zinc-900 bg-zinc-950/40 p-5 sm:p-6 lg:flex-row lg:items-center lg:justify-between">
+        <div className="flex items-start gap-4">
+          <div className="hidden h-12 w-12 shrink-0 items-center justify-center rounded-2xl border border-[#0088FF]/25 bg-[#0088FF]/10 text-[#0088FF] sm:flex">
+            <Rocket size={22} />
+          </div>
+          <div>
+            <div className="mb-2 inline-flex items-center gap-2 rounded-full border border-[#FF5E00]/25 bg-[#FF5E00]/5 px-3 py-1 text-[11px] font-bold uppercase tracking-wider text-[#FF5E00]">
+              <Sparkles size={13} />
+              New opening
+            </div>
+            <h1 className="text-2xl font-bold tracking-tight text-white sm:text-3xl">
+              Post a New Job
+            </h1>
+              <p className="mt-2 max-w-2xl text-sm leading-6 text-zinc-400">
+              Create a polished public listing with role details, compensation,
+              location, and applicant expectations.
+            </p>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-2 gap-3 sm:flex">
+          <div className="rounded-xl border border-zinc-900 bg-black/40 px-4 py-3">
+            <p className="text-[11px] font-semibold uppercase tracking-wider text-zinc-500">
+              Visibility
+            </p>
+            <p className="mt-1 text-sm font-bold text-white">Public</p>
+          </div>
+          <div className="rounded-xl border border-emerald-900/50 bg-emerald-950/20 px-4 py-3">
+            <p className="text-[11px] font-semibold uppercase tracking-wider text-emerald-500">
+              Company
+            </p>
+            <p className="mt-1 text-sm font-bold text-emerald-300">Approved</p>
+          </div>
+        </div>
       </div>
 
-      {/* Back Link */}
-      <Link href="/dashboard/recruiter" className="inline-flex items-center gap-2 text-zinc-400 hover:text-white text-sm mb-6 transition-colors">
-        <ArrowLeft className="size-4" />
-        <span>Back to Dashboard</span>
-      </Link>
+      <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_340px]">
+        <Form
+          onSubmit={handleSubmit}
+          className="flex flex-col gap-6"
+          validationBehavior="aria"
+          validationErrors={errors}
+        >
+          <Fieldset className="w-full rounded-2xl border border-zinc-900 bg-zinc-950/40 p-5 sm:p-6">
+            <div className="space-y-6">
+              <SectionHeading
+                icon={Briefcase}
+                title="Role Information"
+                subtitle="Start with the role basics applicants will scan first."
+              />
 
-      {/* Header */}
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-white tracking-tight flex items-center gap-3">
-          <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#0088FF]/10 border border-[#0088FF]/25 text-[#0088FF]">
-            <Briefcase />
-          </span>
-          Post a New Job
-        </h1>
-        <p className="text-sm text-zinc-400 mt-2">
-          List a new opening. Fill in the parameters, requirements, and job description to publish.
-        </p>
-      </div>
-
-      <form onSubmit={handleSubmitJob} className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
-        {/* Main Form Fields */}
-        <div className="lg:col-span-2 space-y-6">
-          
-          {/* Section 1: Job Info */}
-          <Card className="border border-zinc-800/80 bg-zinc-900/30 p-6 shadow-xl backdrop-blur-md">
-            <Card.Header className="pb-4 border-b border-zinc-850 flex items-center gap-3">
-              <span className="text-sm font-bold text-white bg-zinc-800 h-6 w-6 rounded-full flex items-center justify-center">1</span>
-              <h2 className="text-lg font-bold text-white">Job Details</h2>
-            </Card.Header>
-
-            <Card.Content className="pt-6 space-y-5">
-              
-              {/* Job Title */}
-              <TextField className="w-full" name="title" isRequired>
-                <Label className="mb-1.5 text-sm font-medium text-zinc-200 block">Job Title</Label>
-                <Input
-                  id="title"
-                  value={title}
-                  onChange={(e) => setTitle(e.target.value)}
-                  placeholder="e.g. Senior Full Stack Engineer"
-                  className="h-12 w-full rounded-xl border border-zinc-700/70 bg-zinc-950/70 px-4 text-sm text-white outline-none transition-colors placeholder:text-zinc-550 focus:border-[#0088FF]/70"
-                />
-              </TextField>
-
-              {/* Job Category */}
-              <TextField className="w-full" name="category" isRequired>
-                <Label className="mb-1.5 text-sm font-medium text-zinc-200 block">Job Category</Label>
-                <Input
-                  id="category"
-                  value={category}
-                  onChange={(e) => setCategory(e.target.value)}
-                  placeholder="e.g. Engineering, Product Design, Marketing"
-                  className="h-12 w-full rounded-xl border border-zinc-700/70 bg-zinc-950/70 px-4 text-sm text-white outline-none transition-colors placeholder:text-zinc-550 focus:border-[#0088FF]/70"
-                />
-              </TextField>
-
-              {/* Job Type Grid */}
-              <div className="space-y-2">
-                <Label className="text-sm font-medium text-zinc-200 block">Job Type</Label>
-                <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
-                  {JOB_TYPES.map((t) => (
-                    <button
-                      key={t.id}
-                      type="button"
-                      onClick={() => setJobType(t.id)}
-                      className={`p-3.5 rounded-xl border text-left transition-all duration-200 cursor-pointer ${
-                        jobType === t.id
-                          ? "border-[#0088FF] bg-[#0088FF]/10 text-white shadow-md shadow-[#0088FF]/5"
-                          : "border-zinc-800 bg-zinc-950/40 text-zinc-400 hover:border-zinc-700 hover:text-white"
-                      }`}
-                    >
-                      <span className="text-xs font-bold block">{t.label}</span>
-                      <span className="text-[9px] text-zinc-500 block mt-0.5">{t.description}</span>
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              {/* Salary details & Currency */}
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                <TextField className="w-full" name="salaryMin">
-                  <Label className="mb-1.5 text-sm font-medium text-zinc-200 block">Min Salary</Label>
-                  <div className="relative">
-                    <div className="pointer-events-none absolute left-3.5 top-1/2 z-10 -translate-y-1/2 text-zinc-500 text-sm">
-                      <Tag className="size-4" />
-                    </div>
-                    <Input
-                      id="salaryMin"
-                      type="number"
-                      value={salaryMin}
-                      onChange={(e) => setSalaryMin(e.target.value)}
-                      placeholder="e.g. 80000"
-                      className="h-12 w-full rounded-xl border border-zinc-700/70 bg-zinc-950/70 pl-10 pr-4 text-sm text-white outline-none transition-colors placeholder:text-zinc-550 focus:border-[#0088FF]/70"
-                    />
-                  </div>
+              <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
+                <TextField
+                  name="jobTitle"
+                  isInvalid={!!errors.jobTitle}
+                  className="flex w-full flex-col gap-2"
+                >
+                  <Label className={labelClass}>Job Title</Label>
+                  <Input placeholder="Senior Frontend Engineer" className={getInputClass(!!errors.jobTitle)} />
+                  {errors.jobTitle && (
+                    <FieldError className="text-xs text-red-400">{errors.jobTitle}</FieldError>
+                  )}
                 </TextField>
 
-                <TextField className="w-full" name="salaryMax">
-                  <Label className="mb-1.5 text-sm font-medium text-zinc-200 block">Max Salary</Label>
-                  <div className="relative">
-                    <div className="pointer-events-none absolute left-3.5 top-1/2 z-10 -translate-y-1/2 text-zinc-500 text-sm">
-                      <Tag className="size-4" />
-                    </div>
-                    <Input
-                      id="salaryMax"
-                      type="number"
-                      value={salaryMax}
-                      onChange={(e) => setSalaryMax(e.target.value)}
-                      placeholder="e.g. 120000"
-                      className="h-12 w-full rounded-xl border border-zinc-700/70 bg-zinc-950/70 pl-10 pr-4 text-sm text-white outline-none transition-colors placeholder:text-zinc-550 focus:border-[#0088FF]/70"
-                    />
-                  </div>
-                </TextField>
-
-                <div className="flex flex-col">
-                  <Label className="mb-1.5 text-sm font-medium text-zinc-200 block">Currency</Label>
-                  <select
-                    value={currency}
-                    onChange={(e) => setCurrency(e.target.value)}
-                    className="h-12 w-full rounded-xl border border-zinc-700/70 bg-zinc-950/70 px-4 text-sm text-white outline-none transition-colors focus:border-[#0088FF]/70 cursor-pointer"
-                  >
-                    {CURRENCIES.map((c) => (
-                      <option key={c.id} value={c.id} className="bg-zinc-950">
-                        {c.id} ({c.symbol})
-                      </option>
-                    ))}
-                  </select>
-                </div>
+                <Select name="jobCategory" isInvalid={!!errors.jobCategory} className="w-full">
+                  <Label className={`${labelClass} mb-2 block`}>Job Category</Label>
+                  <Select.Trigger className={triggerClasses}>
+                    <Select.Value className="text-white" />
+                    <Select.Indicator />
+                  </Select.Trigger>
+                  {errors.jobCategory && (
+                    <span className="mt-2 block text-xs text-red-400">{errors.jobCategory}</span>
+                  )}
+                  <Select.Popover className={popoverClasses}>
+                    <ListBox className="outline-none">
+                      {categories.map((item) => (
+                        <ListBox.Item
+                          key={item.id}
+                          id={item.id}
+                          textValue={item.label}
+                          className={listItemClasses}
+                        >
+                          {item.label}
+                        </ListBox.Item>
+                      ))}
+                    </ListBox>
+                  </Select.Popover>
+                </Select>
               </div>
 
-              {/* Location details */}
-              <div className="space-y-4">
-                {/* Remote toggle switch */}
-                <div className="flex items-center justify-between p-4 rounded-xl border border-zinc-800 bg-zinc-950/40">
-                  <div className="flex items-center gap-3">
-                    <span className="text-zinc-400 text-lg">
-                      <Globe />
-                    </span>
-                    <div>
-                      <span className="text-sm font-semibold text-white block">Remote Toggle</span>
-                      <span className="text-xs text-zinc-500 block">Is this a remote position?</span>
-                    </div>
+              <div className="grid grid-cols-1 gap-5 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.4fr)]">
+                <Select name="jobType" isInvalid={!!errors.jobType} className="w-full">
+                  <Label className={`${labelClass} mb-2 block`}>Job Type</Label>
+                  <Select.Trigger className={triggerClasses}>
+                    <Select.Value />
+                    <Select.Indicator />
+                  </Select.Trigger>
+                  {errors.jobType && (
+                    <span className="mt-2 block text-xs text-red-400">{errors.jobType}</span>
+                  )}
+                  <Select.Popover className={popoverClasses}>
+                    <ListBox className="outline-none">
+                      {jobTypes.map((item) => (
+                        <ListBox.Item
+                          key={item.id}
+                          id={item.id}
+                          textValue={item.label}
+                          className={listItemClasses}
+                        >
+                          {item.label}
+                        </ListBox.Item>
+                      ))}
+                    </ListBox>
+                  </Select.Popover>
+                </Select>
+
+                <div className="grid grid-cols-1 gap-3 sm:grid-cols-[1fr_1fr_120px]">
+                  <TextField name="minSalary" isInvalid={!!errors.minSalary} className="flex flex-col gap-2">
+                    <Label className={labelClass}>Min Salary</Label>
+                    <Input placeholder="60000" type="number" className={getInputClass(!!errors.minSalary)} />
+                    {errors.minSalary && (
+                      <FieldError className="text-xs text-red-400">{errors.minSalary}</FieldError>
+                    )}
+                  </TextField>
+
+                  <TextField name="maxSalary" isInvalid={!!errors.maxSalary} className="flex flex-col gap-2">
+                    <Label className={labelClass}>Max Salary</Label>
+                    <Input placeholder="95000" type="number" className={getInputClass(!!errors.maxSalary)} />
+                    {errors.maxSalary && (
+                      <FieldError className="text-xs text-red-400">{errors.maxSalary}</FieldError>
+                    )}
+                  </TextField>
+
+                  <Select name="currency" defaultSelectedKeys={["USD"]} className="w-full">
+                    <Label className={`${labelClass} mb-2 block`}>Currency</Label>
+                    <Select.Trigger className={triggerClasses}>
+                      <Select.Value />
+                      <Select.Indicator />
+                    </Select.Trigger>
+                    <Select.Popover className={popoverClasses}>
+                      <ListBox className="outline-none">
+                        {currencies.map((item) => (
+                          <ListBox.Item
+                            key={item.id}
+                            id={item.id}
+                            textValue={item.label}
+                            className={listItemClasses}
+                          >
+                            {item.label}
+                          </ListBox.Item>
+                        ))}
+                      </ListBox>
+                    </Select.Popover>
+                  </Select>
+                </div>
+              </div>
+            </div>
+          </Fieldset>
+
+          <Fieldset className="w-full rounded-2xl border border-zinc-900 bg-zinc-950/40 p-5 sm:p-6">
+            <div className="space-y-6">
+              <SectionHeading
+                icon={MapPin}
+                title="Location & Timeline"
+                subtitle="Set where candidates will work and when applications close."
+              />
+
+              <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between gap-4">
+                    <Label className={labelClass}>Location</Label>
+                    <Switch isSelected={isRemote} onChange={setIsRemote} size="sm">
+                      <Switch.Control className="bg-zinc-800 data-[selected=true]:bg-[#0088FF]">
+                        <Switch.Thumb className="bg-zinc-300 data-[selected=true]:bg-white" />
+                      </Switch.Control>
+                      <Switch.Content>
+                        <Label className="text-xs font-semibold text-zinc-400">Remote</Label>
+                      </Switch.Content>
+                    </Switch>
                   </div>
-                  <button
-                    type="button"
-                    onClick={() => setIsRemote(!isRemote)}
-                    className={`relative inline-flex h-6.5 w-11.5 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-250 ease-in-out focus:outline-none ${
-                      isRemote ? "bg-[#0088FF]" : "bg-zinc-800"
-                    }`}
+
+                  <TextField
+                    name="location"
+                    isInvalid={!isRemote && !!errors.location}
+                    className="flex w-full flex-col gap-2"
                   >
-                    <span
-                      className={`pointer-events-none inline-block h-5.5 w-5.5 transform rounded-full bg-white shadow ring-0 transition duration-250 ease-in-out ${
-                        isRemote ? "translate-x-5" : "translate-x-0"
-                      }`}
-                    />
-                  </button>
+                    <div className="relative flex items-center">
+                      <Globe
+                        size={16}
+                        className="pointer-events-none absolute left-3 z-10 text-zinc-600"
+                      />
+                      <Input
+                        placeholder={isRemote ? "Global / Remote" : "Austin, TX"}
+                        disabled={isRemote}
+                        className={`${getInputClass(!isRemote && !!errors.location)} pl-10`}
+                      />
+                    </div>
+                    {!isRemote && errors.location && (
+                      <FieldError className="text-xs text-red-400">{errors.location}</FieldError>
+                    )}
+                  </TextField>
+                  <p className={helperClass}>
+                    Remote roles can still mention time zone expectations in the description.
+                  </p>
                 </div>
 
-                {/* City & Country Row */}
-                {!isRemote && (
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <TextField className="w-full" name="city" isRequired>
-                      <Label className="mb-1.5 text-sm font-medium text-zinc-200 block">City</Label>
-                      <Input
-                        id="city"
-                        value={city}
-                        onChange={(e) => setCity(e.target.value)}
-                        placeholder="e.g. San Francisco"
-                        className="h-12 w-full rounded-xl border border-zinc-700/70 bg-zinc-950/70 px-4 text-sm text-white outline-none transition-colors placeholder:text-zinc-550 focus:border-[#0088FF]/70"
-                      />
-                    </TextField>
-
-                    <TextField className="w-full" name="country" isRequired>
-                      <Label className="mb-1.5 text-sm font-medium text-zinc-200 block">Country</Label>
-                      <Input
-                        id="country"
-                        value={country}
-                        onChange={(e) => setCountry(e.target.value)}
-                        placeholder="e.g. United States"
-                        className="h-12 w-full rounded-xl border border-zinc-700/70 bg-zinc-950/70 px-4 text-sm text-white outline-none transition-colors placeholder:text-zinc-550 focus:border-[#0088FF]/70"
-                      />
-                    </TextField>
+                <TextField
+                  name="deadline"
+                  isInvalid={!!errors.deadline}
+                  className="flex w-full flex-col gap-2"
+                >
+                  <Label className={labelClass}>Application Deadline</Label>
+                  <div className="relative flex items-center">
+                    <Calendar
+                      size={16}
+                      className="pointer-events-none absolute left-3 z-10 text-zinc-600"
+                    />
+                    <Input type="date" className={`${getInputClass(!!errors.deadline)} pl-10`} />
                   </div>
+                  {errors.deadline && (
+                    <FieldError className="text-xs text-red-400">{errors.deadline}</FieldError>
+                  )}
+                </TextField>
+              </div>
+            </div>
+          </Fieldset>
+
+          <Fieldset className="w-full rounded-2xl border border-zinc-900 bg-zinc-950/40 p-5 sm:p-6">
+            <div className="space-y-6">
+              <SectionHeading
+                icon={FileText}
+                title="Job Description"
+                subtitle="Give candidates a crisp view of the work, expectations, and upside."
+              />
+
+              <TextField
+                name="responsibilities"
+                isInvalid={!!errors.responsibilities}
+                className="flex w-full flex-col gap-2"
+              >
+                <Label className={labelClass}>Responsibilities</Label>
+                <TextArea
+                  placeholder="Outline the core day-to-day ownership for this role..."
+                  rows={5}
+                  className={getTextAreaClass(!!errors.responsibilities)}
+                />
+                {errors.responsibilities && (
+                  <FieldError className="text-xs text-red-400">{errors.responsibilities}</FieldError>
                 )}
-              </div>
-
-              {/* Application Deadline */}
-              <TextField className="w-full" name="deadline" isRequired>
-                <Label className="mb-1.5 text-sm font-medium text-zinc-200 block">Application Deadline</Label>
-                <div className="relative">
-                  <div className="pointer-events-none absolute left-3.5 top-1/2 z-10 -translate-y-1/2 text-zinc-500 text-sm">
-                    <Calendar className="size-4" />
-                  </div>
-                  <Input
-                    id="deadline"
-                    type="date"
-                    value={deadline}
-                    onChange={(e) => setDeadline(e.target.value)}
-                    className="h-12 w-full rounded-xl border border-zinc-700/70 bg-zinc-950/70 pl-10 pr-4 text-sm text-white outline-none transition-colors focus:border-[#0088FF]/70 cursor-pointer"
-                  />
-                </div>
               </TextField>
 
-            </Card.Content>
-          </Card>
-
-          {/* Section 2: Job Description */}
-          <Card className="border border-zinc-800/80 bg-zinc-900/30 p-6 shadow-xl backdrop-blur-md">
-            <Card.Header className="pb-4 border-b border-zinc-850 flex items-center gap-3">
-              <span className="text-sm font-bold text-white bg-zinc-800 h-6 w-6 rounded-full flex items-center justify-center">2</span>
-              <h2 className="text-lg font-bold text-white">Job Description</h2>
-            </Card.Header>
-
-            <Card.Content className="pt-6 space-y-5">
-              
-              {/* Responsibilities */}
-              <div className="flex flex-col">
-                <Label htmlFor="responsibilities" className="mb-1.5 text-sm font-medium text-zinc-200 block">
-                  Responsibilities <span className="text-red-500">*</span>
-                </Label>
-                <textarea
-                  id="responsibilities"
-                  required
-                  rows={6}
-                  value={responsibilities}
-                  onChange={(e) => setResponsibilities(e.target.value)}
-                  placeholder="Outline the daily tasks, milestones, and scope of this role..."
-                  className="w-full rounded-xl border border-zinc-700/70 bg-zinc-950/70 p-4 text-sm text-white outline-none transition-colors placeholder:text-zinc-550 focus:border-[#0088FF]/70 resize-y min-h-[120px]"
+              <TextField
+                name="requirements"
+                isInvalid={!!errors.requirements}
+                className="flex w-full flex-col gap-2"
+              >
+                <Label className={labelClass}>Requirements</Label>
+                <TextArea
+                  placeholder="List required experience, skills, tools, and certifications..."
+                  rows={5}
+                  className={getTextAreaClass(!!errors.requirements)}
                 />
-              </div>
+                {errors.requirements && (
+                  <FieldError className="text-xs text-red-400">{errors.requirements}</FieldError>
+                )}
+              </TextField>
 
-              {/* Requirements */}
-              <div className="flex flex-col">
-                <Label htmlFor="requirements" className="mb-1.5 text-sm font-medium text-zinc-200 block">
-                  Requirements <span className="text-red-500">*</span>
-                </Label>
-                <textarea
-                  id="requirements"
-                  required
-                  rows={6}
-                  value={requirements}
-                  onChange={(e) => setRequirements(e.target.value)}
-                  placeholder="List the required skills, degrees, experience level, and tools..."
-                  className="w-full rounded-xl border border-zinc-700/70 bg-zinc-950/70 p-4 text-sm text-white outline-none transition-colors placeholder:text-zinc-550 focus:border-[#0088FF]/70 resize-y min-h-[120px]"
-                />
-              </div>
-
-              {/* Benefits */}
-              <div className="flex flex-col">
-                <Label htmlFor="benefits" className="mb-1.5 text-sm font-medium text-zinc-250 block">
-                  Benefits <span className="text-zinc-500 font-normal">(Optional)</span>
-                </Label>
-                <textarea
-                  id="benefits"
+              <TextField name="benefits" className="flex w-full flex-col gap-2">
+                <Label className={labelClass}>Benefits</Label>
+                <TextArea
+                  placeholder="Healthcare, equity, learning budget, remote stipend..."
                   rows={4}
-                  value={benefits}
-                  onChange={(e) => setBenefits(e.target.value)}
-                  placeholder="e.g. Full health insurance, 401(k) matching, flexible PTO, wellness budget..."
-                  className="w-full rounded-xl border border-zinc-700/70 bg-zinc-950/70 p-4 text-sm text-white outline-none transition-colors placeholder:text-zinc-550 focus:border-[#0088FF]/70 resize-y min-h-[100px]"
+                  className={getTextAreaClass(false)}
                 />
-              </div>
+              </TextField>
+            </div>
+          </Fieldset>
 
-            </Card.Content>
-          </Card>
-
-          {/* Action Alerts & Buttons */}
-          <div className="space-y-4">
-            {errorMessage && (
-              <div className="flex items-center gap-2.5 p-4 rounded-xl border border-red-500/25 bg-red-500/5 text-red-400 text-sm leading-relaxed">
-                <CircleExclamation className="shrink-0 size-4" />
-                <span>{errorMessage}</span>
-              </div>
-            )}
-
-            {successMessage && (
-              <div className="flex items-center gap-2.5 p-4 rounded-xl border border-emerald-500/25 bg-emerald-500/5 text-emerald-400 text-sm leading-relaxed">
-                <CircleCheck className="shrink-0 size-4" />
-                <span>{successMessage}</span>
-              </div>
-            )}
-
-            <div className="flex items-center gap-4">
+          <div className="sticky bottom-0 z-20 -mx-4 border-t border-zinc-900 bg-black/85 px-4 py-4 backdrop-blur-xl sm:mx-0 sm:rounded-2xl sm:border sm:bg-zinc-950/70">
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-end">
+              <Button
+                type="button"
+                variant="bordered"
+                onPress={() => router.back()}
+                className="h-11 rounded-xl border-zinc-800 px-5 text-sm font-semibold text-zinc-300 hover:border-zinc-700 hover:bg-zinc-900"
+              >
+                Cancel
+              </Button>
               <Button
                 type="submit"
-                isDisabled={isSubmitting}
-                className="flex-1 h-12 bg-gradient-to-r from-[#0088FF] to-[#0055FF] text-white font-semibold rounded-xl shadow-lg shadow-[#0088FF]/20"
+                className="h-11 rounded-xl bg-gradient-to-r from-[#0088FF] to-[#0055FF] px-6 text-sm font-bold text-white shadow-lg shadow-[#0088FF]/20 transition-all hover:from-[#339FFF] hover:to-[#2277FF]"
               >
-                {isSubmitting ? (
-                  <span className="flex items-center justify-center gap-2">
-                    <svg className="animate-spin h-5 w-5 text-white" fill="none" viewBox="0 0 24 24">
-                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
-                    </svg>
-                    Publishing Job...
-                  </span>
-                ) : (
-                  "Submit & Post Job"
-                )}
+                Post Job
               </Button>
-              <Link href="/dashboard/recruiter" className="w-28">
-                <Button className="w-full h-12 border border-zinc-800 hover:border-zinc-700 bg-zinc-950 text-zinc-450 hover:text-white font-semibold rounded-xl transition-all">
-                  Cancel
-                </Button>
-              </Link>
+            </div>
+          </div>
+        </Form>
+
+        <aside className="flex flex-col gap-5 xl:sticky xl:top-8 xl:self-start">
+          <div className="rounded-2xl border border-zinc-900 bg-zinc-950/40 p-5">
+            <div className="flex items-center justify-between gap-4">
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-wider text-zinc-500">
+                  Posting as
+                </p>
+                <h2 className="mt-1 text-lg font-bold text-white">{mockCompany.name}</h2>
+              </div>
+              <div className="flex h-11 w-11 items-center justify-center rounded-xl border border-emerald-900/50 bg-emerald-950/20 text-emerald-400">
+                <CircleCheck size={20} />
+              </div>
+            </div>
+            <div className="mt-5 rounded-xl border border-zinc-900 bg-black/35 p-4">
+              <div className="flex items-center gap-3">
+                <div className="flex h-9 w-9 items-center justify-center rounded-lg border border-[#0088FF]/20 bg-[#0088FF]/10 text-[#0088FF]">
+                  <Briefcase size={17} />
+                </div>
+                <div>
+                  <p className="text-sm font-bold text-white">Ready for talent</p>
+                  <p className="text-xs text-zinc-500">Listings publish as active by default.</p>
+                </div>
+              </div>
             </div>
           </div>
 
-        </div>
-
-        {/* Sidebar Summary Card */}
-        <div className="space-y-6">
-          <Card className="border border-zinc-800/80 bg-zinc-900/30 p-6 shadow-xl backdrop-blur-md sticky top-6">
-            <Card.Header className="pb-4 border-b border-zinc-850 flex flex-col gap-1">
-              <span className="text-[10px] font-bold text-zinc-555 uppercase tracking-wider">Active Recruiter Profile</span>
-              <h2 className="text-lg font-bold text-white">Posting Company</h2>
-            </Card.Header>
-
-            <Card.Content className="pt-6 space-y-6">
-              
-              {/* Linked Company Details */}
-              <div className="flex items-center gap-4 p-4 rounded-xl border border-zinc-850 bg-zinc-950/30">
-                <div className={`h-12 w-12 rounded-xl border flex items-center justify-center font-bold text-base shrink-0 ${company.logoColor}`}>
-                  {company.letter}
-                </div>
-                <div className="flex flex-col min-w-0">
-                  <span className="text-base font-bold text-white truncate">{company.name}</span>
-                  <span className="text-[11px] text-zinc-500 truncate">{company.category}</span>
-                </div>
+          <div className="rounded-2xl border border-zinc-900 bg-zinc-950/40 p-5">
+            <div className="mb-4 flex items-center gap-3">
+              <div className="flex h-9 w-9 items-center justify-center rounded-xl border border-[#FF5E00]/25 bg-[#FF5E00]/10 text-[#FF5E00]">
+                <Check size={17} />
               </div>
+              <h2 className="text-base font-bold text-white">Publishing Checklist</h2>
+            </div>
 
-              {/* Status Badge */}
-              <div className="flex justify-between items-center py-2 px-3.5 rounded-lg border border-emerald-500/20 bg-emerald-500/5 text-emerald-400">
-                <span className="text-xs font-bold uppercase tracking-wider">Company Status</span>
-                <span className="flex items-center gap-1.5 text-xs font-semibold">
-                  <span className="h-2 w-2 rounded-full bg-emerald-450 animate-pulse" />
-                  Approved
-                </span>
+            <div className="space-y-3">
+              {publishingSteps.map((step) => (
+                <div key={step} className="flex items-center gap-3 text-sm text-zinc-300">
+                  <span className="flex h-5 w-5 items-center justify-center rounded-full border border-[#0088FF]/30 bg-[#0088FF]/10 text-[#0088FF]">
+                    <Check size={12} />
+                  </span>
+                  {step}
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div className="rounded-2xl border border-zinc-900 bg-zinc-950/40 p-5">
+            <h2 className="text-base font-bold text-white">Listing Snapshot</h2>
+            <div className="mt-4 grid grid-cols-2 gap-3">
+              <div className="rounded-xl border border-zinc-900 bg-black/35 p-3">
+                <TagDollar size={17} className="mb-2 text-[#0088FF]" />
+                <p className="text-xs text-zinc-500">Salary</p>
+                <p className="mt-1 text-sm font-bold text-white">Required</p>
               </div>
-
-              <div className="space-y-3.5 text-xs leading-relaxed text-zinc-450 pt-2 border-t border-zinc-850">
-                <div className="flex items-start gap-2.5">
-                  <span className="text-[#0088FF] text-sm mt-0.5"><CircleCheck /></span>
-                  <p>Linked to <strong className="text-zinc-300">{company.name}</strong> as the posting company.</p>
-                </div>
-                <div className="flex items-start gap-2.5">
-                  <span className="text-[#0088FF] text-sm mt-0.5"><CircleCheck /></span>
-                  <p>Status will automatically set to <span className="px-1.5 py-0.5 rounded bg-blue-500/10 border border-blue-500/20 text-[#0088FF] font-semibold text-[10px]">ACTIVE</span>.</p>
-                </div>
-                <div className="flex items-start gap-2.5">
-                  <span className="text-[#0088FF] text-sm mt-0.5"><CircleCheck /></span>
-                  <p>Job will be immediately search-discoverable to all Job Seekers.</p>
-                </div>
+              <div className="rounded-xl border border-zinc-900 bg-black/35 p-3">
+                <Clock size={17} className="mb-2 text-[#FF5E00]" />
+                <p className="text-xs text-zinc-500">Deadline</p>
+                <p className="mt-1 text-sm font-bold text-white">Required</p>
               </div>
-
-            </Card.Content>
-          </Card>
-        </div>
-      </form>
-    </section>
+            </div>
+            <p className="mt-4 text-sm leading-6 text-zinc-500">
+              Keep descriptions specific and skimmable so candidates can qualify
+              themselves before applying.
+            </p>
+          </div>
+        </aside>
+      </div>
+    </div>
   );
 }

@@ -264,7 +264,7 @@ export default function Banner() {
             whileTap={{ scale: 0.98 }}
           >
             <Link
-              href="#"
+              href="/dashboard/recruiter/jobs/new"
               className="inline-flex items-center justify-center w-full px-8 py-3.5 text-base font-semibold text-zinc-300 bg-zinc-950/40 border border-zinc-800 hover:border-[#FF5E00]/40 hover:text-white rounded-xl backdrop-blur-md transition-all duration-300 hover:shadow-[0_6px_20px_rgba(255,94,0,0.15)]"
             >
               Post a Job

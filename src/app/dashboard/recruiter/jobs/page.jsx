@@ -705,11 +705,7 @@ const RecruiterJobs = () => {
               color="primary"
               variant="flat"
               size="sm"
-              classNames={{
-                wrapper: "gap-1 bg-transparent border-0",
-                item: "bg-zinc-900 text-zinc-400 hover:bg-zinc-800 border-zinc-800 rounded-lg text-xs font-semibold",
-                cursor: "bg-[#0088FF] text-white font-bold rounded-lg shadow-md",
-              }}
+              className="[&_[data-slot=wrapper]]:gap-1 [&_[data-slot=wrapper]]:bg-transparent [&_[data-slot=wrapper]]:border-0 [&_[data-slot=item]]:bg-zinc-900 [&_[data-slot=item]]:text-zinc-400 hover:[&_[data-slot=item]]:bg-zinc-800 [&_[data-slot=item]]:border-zinc-800 [&_[data-slot=item]]:rounded-lg [&_[data-slot=item]]:text-xs [&_[data-slot=item]]:font-semibold [&_[data-slot=cursor]]:bg-[#0088FF] [&_[data-slot=cursor]]:text-white [&_[data-slot=cursor]]:font-bold [&_[data-slot=cursor]]:rounded-lg [&_[data-slot=cursor]]:shadow-md"
             />
           </div>
         )}

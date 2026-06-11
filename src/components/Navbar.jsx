@@ -3,11 +3,12 @@
 import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import { signOut, useSession } from "@/lib/auth-client";
 
 export default function Navbar() {
   const router = useRouter();
+  const pathname = usePathname();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isSigningOut, setIsSigningOut] = useState(false);
   const { data: session, isPending } = useSession();
@@ -52,8 +53,16 @@ export default function Navbar() {
             <ul className="flex items-center gap-7">
               <li>
                 <Link
+                  href="/"
+                  className={`text-[14px] font-medium transition-colors duration-200 ${pathname === "/" ? "text-[#0088FF]" : "text-zinc-300 hover:text-white"}`}
+                >
+                  Home
+                </Link>
+              </li>
+              <li>
+                <Link
                   href="/browse-jobs"
-                  className="text-[14px] font-medium text-zinc-300 hover:text-white transition-colors duration-200"
+                  className={`text-[14px] font-medium transition-colors duration-200 ${pathname === "/browse-jobs" ? "text-[#0088FF]" : "text-zinc-300 hover:text-white"}`}
                 >
                   Browse Jobs
                 </Link>
@@ -61,7 +70,7 @@ export default function Navbar() {
               <li>
                 <Link
                   href="#"
-                  className="text-[14px] font-medium text-zinc-300 hover:text-white transition-colors duration-200"
+                  className={`text-[14px] font-medium transition-colors duration-200 ${pathname === "/company" ? "text-[#0088FF]" : "text-zinc-300 hover:text-white"}`}
                 >
                   Company
                 </Link>
@@ -69,7 +78,7 @@ export default function Navbar() {
               <li>
                 <Link
                   href="#"
-                  className="text-[14px] font-medium text-zinc-300 hover:text-white transition-colors duration-200"
+                  className={`text-[14px] font-medium transition-colors duration-200 ${pathname === "/pricing" ? "text-[#0088FF]" : "text-zinc-300 hover:text-white"}`}
                 >
                   Pricing
                 </Link>
@@ -151,9 +160,18 @@ export default function Navbar() {
             <ul className="flex flex-col gap-3 pb-3">
               <li>
                 <Link
+                  href="/"
+                  onClick={() => setIsMenuOpen(false)}
+                  className={`block py-2 text-base font-medium px-3 rounded-lg transition-colors ${pathname === "/" ? "text-[#0088FF] bg-[#0088FF]/10" : "text-zinc-300 hover:text-white hover:bg-zinc-900/40"}`}
+                >
+                  Home
+                </Link>
+              </li>
+              <li>
+                <Link
                   href="/browse-jobs"
                   onClick={() => setIsMenuOpen(false)}
-                  className="block py-2 text-base font-medium text-zinc-300 hover:text-white hover:bg-zinc-900/40 px-3 rounded-lg transition-colors"
+                  className={`block py-2 text-base font-medium px-3 rounded-lg transition-colors ${pathname === "/browse-jobs" ? "text-[#0088FF] bg-[#0088FF]/10" : "text-zinc-300 hover:text-white hover:bg-zinc-900/40"}`}
                 >
                   Browse Jobs
                 </Link>
@@ -162,7 +180,7 @@ export default function Navbar() {
                 <Link
                   href="#"
                   onClick={() => setIsMenuOpen(false)}
-                  className="block py-2 text-base font-medium text-zinc-300 hover:text-white hover:bg-zinc-900/40 px-3 rounded-lg transition-colors"
+                  className={`block py-2 text-base font-medium px-3 rounded-lg transition-colors ${pathname === "/company" ? "text-[#0088FF] bg-[#0088FF]/10" : "text-zinc-300 hover:text-white hover:bg-zinc-900/40"}`}
                 >
                   Company
                 </Link>
@@ -171,7 +189,7 @@ export default function Navbar() {
                 <Link
                   href="#"
                   onClick={() => setIsMenuOpen(false)}
-                  className="block py-2 text-base font-medium text-zinc-300 hover:text-white hover:bg-zinc-900/40 px-3 rounded-lg transition-colors"
+                  className={`block py-2 text-base font-medium px-3 rounded-lg transition-colors ${pathname === "/pricing" ? "text-[#0088FF] bg-[#0088FF]/10" : "text-zinc-300 hover:text-white hover:bg-zinc-900/40"}`}
                 >
                   Pricing
                 </Link>

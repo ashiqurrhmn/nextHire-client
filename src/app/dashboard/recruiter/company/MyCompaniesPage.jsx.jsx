@@ -20,44 +20,6 @@ import {
 import DashboardHeader from "@/components/dashboard/DashboardHeader";
 import { createCompany, getCompanies } from "@/lib/actions/companies";
 
-const INITIAL_COMPANIES = [
-  {
-    id: "co_1",
-    name: "Vercel",
-    category: "Technology",
-    description: "Vercel is the platform for frontend developers, providing speed and reliability. Experience the best workflow for React, Next.js, and more.",
-    location: "San Francisco",
-    size: "201-500",
-    website: "https://vercel.com",
-    status: "pending",
-    logoText: "▲",
-    logoBg: "bg-black text-white border border-zinc-800",
-  },
-  {
-    id: "co_2",
-    name: "Figma",
-    category: "Technology",
-    description: "Figma is the collaborative interface design tool — design, prototype, and gather feedback all in one place. Empowering teams to build better products.",
-    location: "San Francisco",
-    size: "501-1000",
-    website: "https://figma.com",
-    status: "approved",
-    logoText: "F",
-    logoBg: "bg-gradient-to-br from-[#F24E1E] via-[#A259FF] to-[#1ABCFE] text-white font-black",
-  },
-  {
-    id: "co_3",
-    name: "Enosis Solutions",
-    category: "Technology",
-    description: "ENOSIS - Your trusted Software Development Partner. A top tier software development team assisting owners and decision makers to implement...",
-    location: "Dhaka, Bangladesh",
-    size: "51-200",
-    website: "https://enosis.com",
-    status: "pending",
-    logoText: "enosis",
-    logoBg: "bg-white text-black font-extrabold text-[8px] tracking-tight px-1 uppercase border border-zinc-200",
-  }
-];
 
 export default function MyCompaniesPage({recruiter, recruiterCompany}) {
   const router = useRouter();
@@ -69,9 +31,14 @@ export default function MyCompaniesPage({recruiter, recruiterCompany}) {
   // Fetch companies from database on load
   React.useEffect(() => {
     const fetchCompanies = async () => {
+      if (!recruiter?.id) {
+        setCompanies([]);
+        setIsLoading(false);
+        return;
+      }
       try {
         setIsLoading(true);
-        const data = await getCompanies(recruiter?.id);
+        const data = await getCompanies(recruiter.id);
         if (data && Array.isArray(data)) {
           setCompanies(data);
         } else if (data && data.error) {
@@ -80,8 +47,8 @@ export default function MyCompaniesPage({recruiter, recruiterCompany}) {
           setCompanies([]);
         }
       } catch (err) {
-        console.warn("Failed to fetch companies from database, using fallback:", err);
-        setCompanies(INITIAL_COMPANIES);
+        console.warn("Failed to fetch companies from database:", err);
+        setCompanies([]);
       } finally {
         setIsLoading(false);
       }

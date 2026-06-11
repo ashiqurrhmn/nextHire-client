@@ -57,7 +57,7 @@ const RecruiterJobsPage = ({ company, initialJobs }) => {
       if (!company?._id) return;
       try {
         setLoading(true);
-        const data = await getCompanyJobs(company._id);
+        const data = await getCompanyJobs(company?.id);
         if (data && Array.isArray(data)) {
           setJobs(data);
         } else if (data && data.error) {
@@ -75,7 +75,7 @@ const RecruiterJobsPage = ({ company, initialJobs }) => {
     };
 
     fetchJobs();
-  }, [company?._id]);
+  }, [company?.id]);
 
   // Handlers for action column
   const handleDeleteJob = async (jobId) => {

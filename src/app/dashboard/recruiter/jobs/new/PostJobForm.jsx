@@ -186,7 +186,7 @@ export default function PostJobForm({company}) {
     const payload = {
       ...data,
       isRemote,
-      companyId: company._id,
+      companyId: company.id,
       companyName: company.name,
       companyLogo: company.logoUrl || company.logoBg || "",
       status: "active",

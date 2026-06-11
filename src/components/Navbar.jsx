@@ -52,7 +52,7 @@ export default function Navbar() {
             <ul className="flex items-center gap-7">
               <li>
                 <Link
-                  href="#"
+                  href="/browse-jobs"
                   className="text-[14px] font-medium text-zinc-300 hover:text-white transition-colors duration-200"
                 >
                   Browse Jobs
@@ -151,7 +151,7 @@ export default function Navbar() {
             <ul className="flex flex-col gap-3 pb-3">
               <li>
                 <Link
-                  href="#"
+                  href="/browse-jobs"
                   onClick={() => setIsMenuOpen(false)}
                   className="block py-2 text-base font-medium text-zinc-300 hover:text-white hover:bg-zinc-900/40 px-3 rounded-lg transition-colors"
                 >

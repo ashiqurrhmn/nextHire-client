@@ -3,14 +3,19 @@
 import { useState } from "react";
 import Link from "next/link";
 import { motion } from "framer-motion";
+import { useRouter } from "next/navigation";
 
 export default function Banner() {
+  const router = useRouter();
   const [keyword, setKeyword] = useState("");
   const [location, setLocation] = useState("");
 
   const handleSearch = (e) => {
     e.preventDefault();
-    console.log("Searching for:", keyword, "in:", location);
+    const params = new URLSearchParams();
+    if (keyword) params.append("q", keyword);
+    if (location) params.append("loc", location);
+    router.push(`/browse-jobs?${params.toString()}`);
   };
 
   const containerVariants = {

@@ -4,6 +4,7 @@ import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Chip, Button } from "@heroui/react";
 import { Briefcase, Clock, Globe, MapPin, TagDollar, OfficeBadge, Check, Star } from "@gravity-ui/icons";
+import Link from "next/link";
 
 export default function JobCard({ job }) {
   const [isOpen, setIsOpen] = useState(false);
@@ -124,11 +125,11 @@ export default function JobCard({ job }) {
             >
               Details
             </Button>
-            <Button 
-              className="flex-1 h-11 rounded-xl bg-gradient-to-r from-[#0088FF] to-[#0055FF] hover:from-[#339FFF] hover:to-[#2277FF] text-white font-bold text-sm shadow-[0_4px_14px_rgba(0,136,255,0.3)] transition-all"
+            <Link href={`/browse-jobs/${job._id}`} 
+              className="flex-1 h-11 rounded-xl bg-gradient-to-r from-[#0088FF] to-[#0055FF] hover:from-[#339FFF] hover:to-[#2277FF] text-white font-bold text-sm shadow-[0_4px_14px_rgba(0,136,255,0.3)] transition-all flex justify-center items-center"
             >
               Apply Now
-            </Button>
+            </Link>
           </div>
         </div>
       </motion.article>
@@ -253,9 +254,9 @@ export default function JobCard({ job }) {
                 <Button variant="light" onPress={() => setIsOpen(false)} className="text-zinc-400 hover:text-white font-semibold px-4">
                   Close Details
                 </Button>
-                <Button className="h-12 rounded-xl bg-gradient-to-r from-[#0088FF] to-[#0055FF] hover:from-[#339FFF] hover:to-[#2277FF] text-white font-bold px-10 shadow-[0_4px_14px_rgba(0,136,255,0.3)] text-base">
+                <Link href={`/browse-jobs/${job._id}`}  className="h-12 rounded-xl bg-gradient-to-r from-[#0088FF] to-[#0055FF] hover:from-[#339FFF] hover:to-[#2277FF] text-white font-bold px-10 shadow-[0_4px_14px_rgba(0,136,255,0.3)] text-base flex justify-center items-center">
                   Apply for this job
-                </Button>
+                </Link>
               </div>
             </motion.div>
           </motion.div>

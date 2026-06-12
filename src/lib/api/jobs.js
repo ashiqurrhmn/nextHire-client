@@ -14,4 +14,8 @@ export const getCompanyJobs = async (companyId, status = "") => {
 export const getAllJobs = async () => {
   return serverFetch('/api/jobs');
 };
- 
+
+
+export const getJobById = async (id) => {
+  return serverFetch(`/api/jobs/${id}`);
+};

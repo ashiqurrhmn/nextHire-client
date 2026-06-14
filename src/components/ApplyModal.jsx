@@ -4,6 +4,7 @@ import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@heroui/react";
 import { Check } from "@gravity-ui/icons";
+import { createApplication } from "@/lib/actions/applications";
 
 export default function ApplyModal({ job, isOpen, onClose }) {
   const [formData, setFormData] = useState({
@@ -14,28 +15,42 @@ export default function ApplyModal({ job, isOpen, onClose }) {
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
 
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
+    setErrorMessage("");
     setIsSubmitting(true);
     
-    // Simulate API call for the form submission
-    setTimeout(() => {
-      setIsSubmitting(false);
-      setIsSuccess(true);
+    try {
+      const applicationData = {
+        ...formData,
+        jobId: job._id || job.id,
+        jobTitle: job.jobTitle,
+        companyName: job.companyName,
+      };
+      const res = await createApplication(applicationData);
       
-      // Auto close after 3 seconds
-      setTimeout(() => {
-        onClose();
-        setIsSuccess(false);
-        setFormData({ fullName: "", email: "", portfolioUrl: "", coverLetter: "" });
-      }, 3000);
-    }, 1500);
+      if (res?.error) {
+        setErrorMessage(res.error);
+      } else {
+        setIsSuccess(true);
+        setTimeout(() => {
+          onClose();
+          setIsSuccess(false);
+          setFormData({ fullName: "", email: "", portfolioUrl: "", coverLetter: "" });
+        }, 3000);
+      }
+    } catch (err) {
+      setErrorMessage("An unexpected error occurred. Please try again.");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -130,6 +145,9 @@ export default function ApplyModal({ job, isOpen, onClose }) {
                       className="w-full bg-[#1c1c1f] border border-zinc-800 text-white placeholder-zinc-500 text-sm rounded-xl px-4 py-3 focus:outline-none focus:border-[#0088FF]/50 focus:ring-1 focus:ring-[#0088FF]/50 transition-all custom-scrollbar resize-none"
                     />
                   </div>
+                  {errorMessage ? (
+                    <p className="text-sm text-red-400">{errorMessage}</p>
+                  ) : null}
                   <Button
                     type="submit"
                     isLoading={isSubmitting}

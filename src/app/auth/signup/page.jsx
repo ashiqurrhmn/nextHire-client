@@ -68,7 +68,10 @@ export default function SignUpPage() {
       }
 
       setSuccessMessage("Account created successfully!");
-      router.push("/");
+      
+      const params = new URLSearchParams(window.location.search);
+      const redirectUrl = params.get("redirect");
+      router.push(redirectUrl || "/");
     } catch (error) {
       setErrorMessage(error?.message || "Could not create account.");
     } finally {
@@ -258,6 +261,10 @@ export default function SignUpPage() {
               Already have an account?{" "}
               <Link
                 href="/auth/signin"
+                onClick={(e) => {
+                  e.preventDefault();
+                  router.push(`/auth/signin${window.location.search}`);
+                }}
                 className="text-[#FF8A3D] hover:text-[#FFA15F]"
               >
                 Sign in

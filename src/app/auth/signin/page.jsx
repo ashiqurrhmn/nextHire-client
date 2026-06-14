@@ -35,7 +35,10 @@ export default function SignInPage() {
       }
 
       setSuccessMessage("Signed in successfully!");
-      router.push("/");
+      
+      const params = new URLSearchParams(window.location.search);
+      const redirectUrl = params.get("redirect");
+      router.push(redirectUrl || "/");
     } catch (error) {
       setErrorMessage(error?.message || "Could not sign in.");
     } finally {
@@ -154,7 +157,14 @@ export default function SignInPage() {
           <Card.Footer className="flex justify-center pb-6 pt-4">
             <p className="text-sm text-zinc-400">
               New to NextHire?{" "}
-              <Link href="/auth/signup" className="text-[#FF8A3D] hover:text-[#FFA15F]">
+              <Link 
+                href="/auth/signup"
+                onClick={(e) => {
+                  e.preventDefault();
+                  router.push(`/auth/signup${window.location.search}`);
+                }}
+                className="text-[#FF8A3D] hover:text-[#FFA15F]"
+              >
                 Create an account
               </Link>
             </p>

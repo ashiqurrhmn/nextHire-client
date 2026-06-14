@@ -6,9 +6,29 @@ import { Button } from "@heroui/react";
 import { ArrowLeft, Briefcase, Clock, MapPin, TagDollar, OfficeBadge, Check, Star, Globe } from "@gravity-ui/icons";
 import Link from "next/link";
 import ApplyModal from "@/components/ApplyModal";
+import { useSession } from "@/lib/auth-client";
+import { useRouter, useParams } from "next/navigation";
 
 export default function JobDetailsClient({ job }) {
   const [isApplyModalOpen, setIsApplyModalOpen] = useState(false);
+  const { data: session } = useSession();
+  const router = useRouter();
+  const params = useParams();
+  const id = params?.id;
+
+  const handleApplyClick = () => {
+    if (!session?.user) {
+      router.push(`/auth/signin?redirect=/browse-jobs/${id}`);
+      return;
+    }
+    
+    if (session?.user?.role !== "seeker") {
+      alert("Only job seekers can apply for jobs.");
+      return;
+    }
+
+    setIsApplyModalOpen(true);
+  };
 
   if (!job) {
     return (
@@ -95,7 +115,7 @@ export default function JobDetailsClient({ job }) {
             </div>
 
             <Button
-              onPress={() => setIsApplyModalOpen(true)}
+              onPress={handleApplyClick}
               className="w-full md:w-auto h-11 px-6 rounded-xl bg-gradient-to-r from-[#0088FF] to-[#0055FF] hover:from-[#339FFF] hover:to-[#2277FF] text-white font-bold text-sm shadow-[0_6px_20px_rgba(0,136,255,0.3)] transition-all shrink-0"
             >
               Apply Now

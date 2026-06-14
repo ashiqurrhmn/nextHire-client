@@ -15,6 +15,8 @@ import {
 } from "@gravity-ui/icons";
 import { getAllJobs } from "@/lib/api/jobs";
 import JobCard from "@/components/JobCard";
+import { useSession } from "@/lib/auth-client";
+import { getMyAppliedJobIds } from "@/lib/actions/applications";
 
 const colors = [
   "#635BFF", "#A259FF", "#10A37F", "#FF6B6B", "#5E6AD2", "#0088FF"
@@ -49,6 +51,8 @@ const headingVariants = {
 export default function FeaturedJobs() {
   const [featuredJobs, setFeaturedJobs] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [appliedJobIds, setAppliedJobIds] = useState([]);
+  const { data: session } = useSession();
 
   useEffect(() => {
     const fetchJobs = async () => {
@@ -93,8 +97,22 @@ export default function FeaturedJobs() {
     fetchJobs();
   }, []);
 
+  useEffect(() => {
+    const fetchApplied = async () => {
+      if (session?.user?.id) {
+        try {
+          const res = await getMyAppliedJobIds(session.user.id);
+          if (res?.appliedJobIds) setAppliedJobIds(res.appliedJobIds);
+        } catch (err) {
+          console.error("Failed to fetch applied jobs:", err);
+        }
+      }
+    };
+    fetchApplied();
+  }, [session?.user?.id]);
+
   return (
-    <section className="relative overflow-hidden bg-black px-4 sm:px-6 lg:px-8 py-24 sm:py-32">
+    <section className="relative overflow-hidden bg-black px-4 sm:px-6 lg:px-8 pt-24 sm:py-32">
       {/* Ambient background glow */}
       <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[400px] bg-[#0088FF]/[0.04] rounded-full blur-[150px] pointer-events-none" />
       <div className="absolute bottom-0 right-1/4 w-[500px] h-[300px] bg-[#FF5E00]/[0.03] rounded-full blur-[120px] pointer-events-none" />
@@ -161,7 +179,7 @@ export default function FeaturedJobs() {
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
             {featuredJobs.map((job) => (
-              <JobCard key={job.id} job={job} />
+              <JobCard key={job.id} job={job} hasApplied={appliedJobIds.includes(job._id)} />
             ))}
           </div>
         )}

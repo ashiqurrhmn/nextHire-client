@@ -7,6 +7,8 @@ import { Button } from "@heroui/react";
 import { ArrowLeft, Briefcase, Magnifier } from "@gravity-ui/icons";
 import { getAllJobs } from "@/lib/api/jobs";
 import JobCard from "@/components/JobCard";
+import { useSession } from "@/lib/auth-client";
+import { getMyAppliedJobIds } from "@/lib/actions/applications";
 
 const colors = [
   "#635BFF", "#A259FF", "#10A37F", "#FF6B6B", "#5E6AD2", "#0088FF"
@@ -92,6 +94,8 @@ export default function BrowseJobsPage() {
   const [selectedCategories, setSelectedCategories] = useState([]);
   const [selectedWorkTypes, setSelectedWorkTypes] = useState([]);
   const [selectedJobTypes, setSelectedJobTypes] = useState([]);
+  const [appliedJobIds, setAppliedJobIds] = useState([]);
+  const { data: session } = useSession();
   const jobsPerPage = 9;
 
   const uniqueCategories = useMemo(() => {
@@ -155,6 +159,23 @@ export default function BrowseJobsPage() {
 
     fetchJobs();
   }, []);
+
+  // Fetch applied job IDs when user session is available
+  useEffect(() => {
+    const fetchApplied = async () => {
+      if (session?.user?.id) {
+        try {
+          const res = await getMyAppliedJobIds(session.user.id);
+          if (res?.appliedJobIds) {
+            setAppliedJobIds(res.appliedJobIds);
+          }
+        } catch (err) {
+          console.error("Failed to fetch applied jobs:", err);
+        }
+      }
+    };
+    fetchApplied();
+  }, [session?.user?.id]);
 
   const filteredJobs = jobs.filter(job => {
     const matchesSearch = 
@@ -321,7 +342,7 @@ export default function BrowseJobsPage() {
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
               {displayedJobs.map((job) => (
-                <JobCard key={job.id} job={job} />
+                <JobCard key={job.id} job={job} hasApplied={appliedJobIds.includes(job._id)} />
               ))}
             </div>
           )}

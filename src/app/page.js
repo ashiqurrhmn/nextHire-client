@@ -3,6 +3,7 @@
 import Banner from "@/components/Banner";
 import Stats from "@/components/Stats";
 import FeaturedJobs from "@/components/FeaturedJobs";
+import Pricing from "@/components/Pricing";
 
 export default function Home() {
   return (
@@ -10,6 +11,7 @@ export default function Home() {
       <Banner />
       <Stats />
       <FeaturedJobs />
+      <Pricing />
     </div>
   );
 }

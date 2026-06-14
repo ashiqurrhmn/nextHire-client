@@ -77,7 +77,7 @@ export default function Navbar() {
               </li>
               <li>
                 <Link
-                  href="#"
+                  href="/pricing"
                   className={`text-[14px] font-medium transition-colors duration-200 ${pathname === "/pricing" ? "text-[#0088FF]" : "text-zinc-300 hover:text-white"}`}
                 >
                   Pricing
@@ -187,7 +187,7 @@ export default function Navbar() {
               </li>
               <li>
                 <Link
-                  href="#"
+                  href="/pricing"
                   onClick={() => setIsMenuOpen(false)}
                   className={`block py-2 text-base font-medium px-3 rounded-lg transition-colors ${pathname === "/pricing" ? "text-[#0088FF] bg-[#0088FF]/10" : "text-zinc-300 hover:text-white hover:bg-zinc-900/40"}`}
                 >

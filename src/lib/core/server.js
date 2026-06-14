@@ -3,6 +3,7 @@ const baseUrl = process.env.NEXT_PUBLIC_BASE_URL;
 export const serverFetch = async (path, data) => {
     const options = {
         method: 'GET',
+        cache: 'no-store',
         headers: {
             'Content-Type': 'application/json',
         },

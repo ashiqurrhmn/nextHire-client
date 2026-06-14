@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { Button } from "@heroui/react";
 import { ArrowLeft, Briefcase, Clock, MapPin, TagDollar, OfficeBadge, Check, Star, Globe } from "@gravity-ui/icons";
@@ -9,8 +9,14 @@ import ApplyModal from "@/components/ApplyModal";
 import { useSession } from "@/lib/auth-client";
 import { useRouter, useParams } from "next/navigation";
 
-export default function JobDetailsClient({ job }) {
+export default function JobDetailsClient({ job, initialHasApplied = false, totalApplicationsCount = 0 }) {
   const [isApplyModalOpen, setIsApplyModalOpen] = useState(false);
+  const [hasApplied, setHasApplied] = useState(initialHasApplied);
+
+  useEffect(() => {
+    setHasApplied(initialHasApplied);
+  }, [initialHasApplied]);
+
   const { data: session } = useSession();
   const router = useRouter();
   const params = useParams();
@@ -24,6 +30,11 @@ export default function JobDetailsClient({ job }) {
     
     if (session?.user?.role !== "seeker") {
       alert("Only job seekers can apply for jobs.");
+      return;
+    }
+
+    if (totalApplicationsCount >= 3) {
+      router.push("/pricing");
       return;
     }
 
@@ -64,10 +75,38 @@ export default function JobDetailsClient({ job }) {
 
   return (
     <div className="bg-black min-h-screen pt-10 pb-12 px-4 sm:px-6 lg:px-8">
-      {/* Background ambient glow */}
-      <div className="fixed top-0 left-1/2 -translate-x-1/2 w-[800px] h-[600px] bg-[#0088FF]/[0.03] rounded-full blur-[150px] pointer-events-none" />
-
       <div className="relative z-10 max-w-4xl mx-auto">
+        <motion.div
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="mb-6 bg-gradient-to-r from-[#0088FF]/10 to-purple-500/10 border border-[#0088FF]/20 rounded-[16px] p-4 sm:p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 backdrop-blur-md"
+        >
+          <div className="flex items-center gap-3.5">
+            <div className="w-10 h-10 rounded-full bg-[#0088FF]/20 flex items-center justify-center shrink-0">
+              <Briefcase size={20} className="text-[#0088FF]" />
+            </div>
+            <div>
+              <p className="text-sm sm:text-base font-semibold text-white mb-0.5">Free Plan Quota</p>
+              <p className="text-xs sm:text-sm text-zinc-400">You have applied to {totalApplicationsCount} out of 3 jobs.</p>
+            </div>
+          </div>
+          <div className="flex flex-col items-start sm:items-end w-full sm:w-auto">
+            <div className="flex gap-1.5 mb-1.5">
+              {[1, 2, 3].map((num) => (
+                <div key={num} className={`h-1.5 w-8 rounded-full transition-all duration-500 ${num <= totalApplicationsCount ? 'bg-gradient-to-r from-[#0088FF] to-[#0055FF] shadow-[0_0_8px_rgba(0,136,255,0.5)]' : 'bg-zinc-800'}`} />
+              ))}
+            </div>
+            {totalApplicationsCount >= 3 ? (
+              <Link href="/pricing" className="text-[11px] font-bold tracking-wider uppercase text-purple-400 hover:text-purple-300 transition-colors flex items-center gap-1">
+                Upgrade Plan 
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14"></path><path d="m12 5 7 7-7 7"></path></svg>
+              </Link>
+            ) : (
+              <span className="text-[11px] font-bold tracking-wider uppercase text-[#0088FF]">{Math.max(0, 3 - totalApplicationsCount)} remaining</span>
+            )}
+          </div>
+        </motion.div>
+
         <motion.div
           initial={{ opacity: 0, x: -20 }}
           animate={{ opacity: 1, x: 0 }}
@@ -116,9 +155,10 @@ export default function JobDetailsClient({ job }) {
 
             <Button
               onPress={handleApplyClick}
-              className="w-full md:w-auto h-11 px-6 rounded-xl bg-gradient-to-r from-[#0088FF] to-[#0055FF] hover:from-[#339FFF] hover:to-[#2277FF] text-white font-bold text-sm shadow-[0_6px_20px_rgba(0,136,255,0.3)] transition-all shrink-0"
+              isDisabled={hasApplied}
+              className={`w-full md:w-auto h-11 px-6 rounded-xl font-bold text-sm shadow-[0_6px_20px_rgba(0,136,255,0.3)] transition-all shrink-0 data-[disabled=true]:opacity-50 text-white ${totalApplicationsCount >= 3 && !hasApplied ? 'bg-gradient-to-r from-purple-500 to-indigo-600 hover:from-purple-400 hover:to-indigo-500 shadow-[0_6px_20px_rgba(168,85,247,0.3)]' : 'bg-gradient-to-r from-[#0088FF] to-[#0055FF] hover:from-[#339FFF] hover:to-[#2277FF]'}`}
             >
-              Apply Now
+              {hasApplied ? "Applied" : totalApplicationsCount >= 3 ? "Upgrade to Apply" : "Apply Now"}
             </Button>
           </div>
 
@@ -213,6 +253,8 @@ export default function JobDetailsClient({ job }) {
         job={job} 
         isOpen={isApplyModalOpen} 
         onClose={() => setIsApplyModalOpen(false)} 
+        onApplied={() => setHasApplied(true)}
+        user={session?.user}
       />
     </div>
   );

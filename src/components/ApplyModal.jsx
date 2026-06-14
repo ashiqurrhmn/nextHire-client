@@ -6,7 +6,7 @@ import { Button } from "@heroui/react";
 import { Check } from "@gravity-ui/icons";
 import { createApplication } from "@/lib/actions/applications";
 
-export default function ApplyModal({ job, isOpen, onClose }) {
+export default function ApplyModal({ job, isOpen, onClose, onApplied, user }) {
   const [formData, setFormData] = useState({
     fullName: "",
     email: "",
@@ -33,6 +33,7 @@ export default function ApplyModal({ job, isOpen, onClose }) {
         jobId: job._id || job.id,
         jobTitle: job.jobTitle,
         companyName: job.companyName,
+        applicantId: user?.id,
       };
       const res = await createApplication(applicationData);
       
@@ -40,6 +41,7 @@ export default function ApplyModal({ job, isOpen, onClose }) {
         setErrorMessage(res.error);
       } else {
         setIsSuccess(true);
+        if (onApplied) onApplied();
         setTimeout(() => {
           onClose();
           setIsSuccess(false);

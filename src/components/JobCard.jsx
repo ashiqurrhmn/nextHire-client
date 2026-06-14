@@ -6,7 +6,7 @@ import { Chip, Button } from "@heroui/react";
 import { Briefcase, Clock, Globe, MapPin, TagDollar, OfficeBadge, Check, Star } from "@gravity-ui/icons";
 import Link from "next/link";
 
-export default function JobCard({ job }) {
+export default function JobCard({ job, hasApplied = false }) {
   const [isOpen, setIsOpen] = useState(false);
 
   // Helper to format tags string or array
@@ -125,11 +125,17 @@ export default function JobCard({ job }) {
             >
               Details
             </Button>
-            <Link href={`/browse-jobs/${job._id}`} 
-              className="flex-1 h-11 rounded-xl bg-gradient-to-r from-[#0088FF] to-[#0055FF] hover:from-[#339FFF] hover:to-[#2277FF] text-white font-bold text-sm shadow-[0_4px_14px_rgba(0,136,255,0.3)] transition-all flex justify-center items-center"
-            >
-              Apply Now
-            </Link>
+            {hasApplied ? (
+              <div className="flex-1 h-11 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 font-bold text-sm flex justify-center items-center gap-2 cursor-default">
+                <Check size={14} /> Applied
+              </div>
+            ) : (
+              <Link href={`/browse-jobs/${job._id}`} 
+                className="flex-1 h-11 rounded-xl bg-gradient-to-r from-[#0088FF] to-[#0055FF] hover:from-[#339FFF] hover:to-[#2277FF] text-white font-bold text-sm shadow-[0_4px_14px_rgba(0,136,255,0.3)] transition-all flex justify-center items-center"
+              >
+                Apply Now
+              </Link>
+            )}
           </div>
         </div>
       </motion.article>
@@ -254,9 +260,15 @@ export default function JobCard({ job }) {
                 <Button variant="light" onPress={() => setIsOpen(false)} className="text-zinc-400 hover:text-white font-semibold px-4">
                   Close Details
                 </Button>
-                <Link href={`/browse-jobs/${job._id}`}  className="h-12 rounded-xl bg-gradient-to-r from-[#0088FF] to-[#0055FF] hover:from-[#339FFF] hover:to-[#2277FF] text-white font-bold px-10 shadow-[0_4px_14px_rgba(0,136,255,0.3)] text-base flex justify-center items-center">
-                  Apply for this job
-                </Link>
+                {hasApplied ? (
+                  <div className="h-12 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 font-bold px-10 text-base flex justify-center items-center gap-2 cursor-default">
+                    <Check size={16} /> Applied
+                  </div>
+                ) : (
+                  <Link href={`/browse-jobs/${job._id}`} className="h-12 rounded-xl bg-gradient-to-r from-[#0088FF] to-[#0055FF] hover:from-[#339FFF] hover:to-[#2277FF] text-white font-bold px-10 shadow-[0_4px_14px_rgba(0,136,255,0.3)] text-base flex justify-center items-center">
+                    Apply for this job
+                  </Link>
+                )}
               </div>
             </motion.div>
           </motion.div>

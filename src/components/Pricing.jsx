@@ -43,6 +43,7 @@ export default function Pricing() {
       buttonVariant: "solid",
       popular: true,
       gradient: "from-[#0088FF] to-[#0055FF]",
+      stripePriceId: "price_1TiKAB3pA2swKjtHCOXIL4bn",
     },
     {
       name: "Premium",
@@ -61,6 +62,7 @@ export default function Pricing() {
       buttonVariant: "solid",
       popular: false,
       gradient: "from-purple-500 to-indigo-600",
+      stripePriceId: "price_1TiKAB3pA2swKjtHCOXIL4bn",
     }
   ];
 
@@ -96,6 +98,7 @@ export default function Pricing() {
       buttonVariant: "solid",
       popular: true,
       gradient: "from-[#0088FF] to-[#0055FF]",
+      stripePriceId: "price_1TiKAB3pA2swKjtHCOXIL4bn",
     },
     {
       name: "Enterprise",
@@ -115,6 +118,7 @@ export default function Pricing() {
       buttonVariant: "solid",
       popular: false,
       gradient: "from-purple-500 to-indigo-600",
+      stripePriceId: "price_1TiKAB3pA2swKjtHCOXIL4bn",
     }
   ];
 
@@ -244,20 +248,21 @@ export default function Pricing() {
                   ))}
                 </div>
 
-                <Link href="/pricing" className="w-full">
-                  <Button
-                    className={`w-full h-12 rounded-xl font-bold text-base transition-all ${
+                <form action="/api/checkout_sessions" method="POST">
+      <section>
+        <button type="submit" role="link"  className={`w-full h-12 rounded-xl font-bold text-base transition-all ${
                       plan.popular
                         ? "bg-gradient-to-r from-[#0088FF] to-[#0055FF] text-white shadow-[0_4px_20px_rgba(0,136,255,0.3)] hover:shadow-[0_4px_25px_rgba(0,136,255,0.5)]"
                         : plan.gradient 
                           ? `bg-gradient-to-r ${plan.gradient} text-white shadow-lg`
                           : "bg-zinc-800 hover:bg-zinc-700 text-white"
-                    }`}
-                    variant={plan.buttonVariant === "bordered" ? "flat" : "solid"}
-                  >
-                    {plan.buttonText}
-                  </Button>
-                </Link>
+                    }`}>
+          Checkout
+        </button>
+      </section>
+    </form>
+
+                
               </motion.div>
             ))}
           </AnimatePresence>

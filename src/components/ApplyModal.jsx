@@ -34,6 +34,7 @@ export default function ApplyModal({ job, isOpen, onClose, onApplied, user }) {
         jobTitle: job.jobTitle,
         companyName: job.companyName,
         applicantId: user?.id,
+        status: "applied",
       };
       const res = await createApplication(applicationData);
       

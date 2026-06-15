@@ -221,9 +221,9 @@ export function DashboardSideBar() {
       <aside className="hidden lg:flex w-64 flex-col justify-between border-r border-zinc-900 bg-[#0a0a0c] p-6 h-full shrink-0">
         <div className="flex flex-col gap-2">
           {/* Logo & Branding */}
-          <div className="flex items-center gap-2 outline-none px-1 py-2 mb-2">
+          <Link href="/" className="flex items-center gap-2 outline-none px-1 py-2 mb-2 hover:opacity-80 transition-opacity cursor-pointer block">
             <Image src="/assets/logo.png" alt="Logo" width={150} height={100} />
-          </div>
+          </Link>
 
           {/* Profile Header (Top) */}
           {isAuthenticated && profileHeader}
@@ -287,7 +287,9 @@ export function DashboardSideBar() {
                 <Drawer.CloseTrigger className="absolute right-4 top-4 text-zinc-400 hover:text-white" />
                 <Drawer.Header className="pt-2 pb-4 border-b border-zinc-900">
                   <Drawer.Heading className="text-lg font-bold text-white flex items-center gap-2">
-                    <Image src="/assets/logo.png" alt="Logo" width={120} height={80} />
+                    <Link href="/" className="hover:opacity-80 transition-opacity cursor-pointer block">
+                      <Image src="/assets/logo.png" alt="Logo" width={120} height={80} />
+                    </Link>
                   </Drawer.Heading>
                 </Drawer.Header>
                 <Drawer.Body className="flex-1 py-4 overflow-y-auto">

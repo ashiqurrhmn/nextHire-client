@@ -27,61 +27,30 @@ const calculateTimeAgo = (dateStr) => {
   return `${diffInDays}d ago`;
 };
 
-const FilterDropdown = ({ label, options, selected, onChange }) => {
-  const [isOpen, setIsOpen] = useState(false);
-  const dropdownRef = useRef(null);
-
-  useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
-        setIsOpen(false);
-      }
-    };
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
-
+const FilterSection = ({ label, options, selected, onChange }) => {
   return (
-    <div className="relative" ref={dropdownRef}>
-      <button
-        onClick={() => setIsOpen(!isOpen)}
-        className={`h-11 rounded-[14px] bg-[#121214]/90 border ${selected.length > 0 ? 'border-[#0088FF]/50 text-white' : 'border-zinc-800 text-zinc-300 hover:border-zinc-700'} text-sm font-semibold transition-all duration-300 backdrop-blur-sm px-4 flex items-center gap-2 shadow-sm`}
-      >
-        {label}
-        {selected.length > 0 && (
-          <span className="flex items-center justify-center w-5 h-5 rounded-full bg-[#0088FF] text-white text-[11px] font-bold">
-            {selected.length}
-          </span>
-        )}
-        <svg className={`w-4 h-4 transition-transform duration-200 opacity-70 ${isOpen ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-        </svg>
-      </button>
-      
-      {isOpen && (
-        <div className="absolute top-full mt-2 left-0 w-64 bg-[#121214] border border-zinc-800 rounded-xl shadow-[0_12px_40px_rgba(0,0,0,0.5)] z-50 overflow-hidden">
-          <div className="max-h-60 overflow-y-auto p-2 flex flex-col gap-1 custom-scrollbar">
-            {options.map(option => (
-              <label key={option} className="flex items-center gap-3 px-3 py-2.5 hover:bg-zinc-800/50 rounded-lg cursor-pointer transition-colors group">
-                <input
-                  type="checkbox"
-                  className="hidden"
-                  checked={selected.includes(option)}
-                  onChange={() => onChange(option)}
-                />
-                <div className={`w-4 h-4 rounded border flex items-center justify-center transition-colors shrink-0 ${selected.includes(option) ? 'bg-[#0088FF] border-[#0088FF]' : 'border-zinc-600 group-hover:border-zinc-500 bg-zinc-900/50'}`}>
-                  {selected.includes(option) && (
-                    <svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
-                    </svg>
-                  )}
-                </div>
-                <span className="text-sm text-zinc-300 group-hover:text-white transition-colors select-none line-clamp-1">{option}</span>
-              </label>
-            ))}
-          </div>
-        </div>
-      )}
+    <div className="mb-6">
+      <h3 className="text-white font-bold mb-3">{label}</h3>
+      <div className="flex flex-col gap-2">
+        {options.map(option => (
+          <label key={option} className="flex items-center gap-3 cursor-pointer group">
+            <input
+              type="checkbox"
+              className="hidden"
+              checked={selected.includes(option)}
+              onChange={() => onChange(option)}
+            />
+            <div className={`w-4 h-4 rounded border flex items-center justify-center transition-colors shrink-0 ${selected.includes(option) ? 'bg-[#0088FF] border-[#0088FF]' : 'border-zinc-600 group-hover:border-zinc-500 bg-transparent'}`}>
+              {selected.includes(option) && (
+                <svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                </svg>
+              )}
+            </div>
+            <span className="text-sm text-zinc-400 group-hover:text-zinc-200 transition-colors select-none">{option}</span>
+          </label>
+        ))}
+      </div>
     </div>
   );
 };
@@ -214,7 +183,7 @@ export default function BrowseJobsPage() {
         {/* Ambient background glow */}
         <div className="absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-[#0088FF]/[0.06] rounded-full blur-[150px] pointer-events-none" />
 
-        <div className="relative z-30 mx-auto max-w-4xl flex flex-col items-center text-center">
+        <div className="relative z-10 mx-auto max-w-4xl flex flex-col items-center text-center">
 
 
           <motion.h1
@@ -239,15 +208,14 @@ export default function BrowseJobsPage() {
             role, location, and salary to find your perfect match.
           </motion.p>
 
-          {/* Search and Filters */}
+          {/* Search Input */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ type: "spring", stiffness: 80, damping: 14, delay: 0.25 }}
-            className="w-full max-w-5xl flex flex-col md:flex-row items-center gap-4 justify-center"
+            className="w-full max-w-2xl mb-12"
           >
-            {/* Search Input */}
-            <div className="w-full md:flex-1 rounded-2xl border border-zinc-800/80 bg-[#121214]/90 backdrop-blur-md p-2 flex items-center gap-2 shadow-[0_12px_40px_rgba(0,0,0,0.5)]">
+            <div className="w-full rounded-2xl border border-zinc-800/80 bg-[#121214]/90 backdrop-blur-md p-2 flex items-center gap-2 shadow-[0_12px_40px_rgba(0,0,0,0.5)]">
               <div className="flex-1 flex items-center gap-3 px-3 py-3">
                 <Magnifier size={18} className="text-zinc-500 shrink-0" />
                 <input
@@ -268,91 +236,98 @@ export default function BrowseJobsPage() {
               </Button>
             </div>
 
-            {/* Filters */}
-            <div className="flex flex-wrap items-center gap-3 justify-center md:justify-end shrink-0">
-              {uniqueCategories.length > 0 && (
-                <FilterDropdown
-                  label="Category"
-                  options={uniqueCategories}
-                  selected={selectedCategories}
-                  onChange={(cat) => {
-                    setSelectedCategories(prev => 
-                      prev.includes(cat) ? prev.filter(c => c !== cat) : [...prev, cat]
-                    );
-                    setCurrentPage(1);
-                  }}
-                />
-              )}
+          </motion.div>
+        </div>
 
-              <FilterDropdown
-                label="Work Type"
-                options={["Remote", "On-site"]}
-                selected={selectedWorkTypes}
+        {/* Main Content Area: Sidebar + Job List */}
+        <div className="relative z-30 mx-auto max-w-7xl mt-8 flex flex-col md:flex-row gap-8 items-start">
+          
+          {/* Filters Sidebar */}
+          <div className="w-full md:w-64 shrink-0 rounded-2xl border border-zinc-800/60 bg-gradient-to-b from-[#16161a]/90 to-[#0a0a0c]/90 backdrop-blur-xl p-6">
+            <h2 className="text-lg font-extrabold text-white mb-6">Filters</h2>
+
+            {uniqueJobTypes.length > 0 && (
+              <FilterSection
+                label="Job Type"
+                options={uniqueJobTypes}
+                selected={selectedJobTypes}
                 onChange={(type) => {
-                  setSelectedWorkTypes(prev => 
+                  setSelectedJobTypes(prev => 
                     prev.includes(type) ? prev.filter(t => t !== type) : [...prev, type]
                   );
                   setCurrentPage(1);
                 }}
               />
+            )}
 
-              {uniqueJobTypes.length > 0 && (
-                <FilterDropdown
-                  label="Job Type"
-                  options={uniqueJobTypes}
-                  selected={selectedJobTypes}
-                  onChange={(type) => {
-                    setSelectedJobTypes(prev => 
-                      prev.includes(type) ? prev.filter(t => t !== type) : [...prev, type]
-                    );
-                    setCurrentPage(1);
-                  }}
-                />
-              )}
+            <FilterSection
+              label="Work Type"
+              options={["Remote", "On-site"]}
+              selected={selectedWorkTypes}
+              onChange={(type) => {
+                setSelectedWorkTypes(prev => 
+                  prev.includes(type) ? prev.filter(t => t !== type) : [...prev, type]
+                );
+                setCurrentPage(1);
+              }}
+            />
 
-              {(selectedCategories.length > 0 || selectedWorkTypes.length > 0 || selectedJobTypes.length > 0) && (
-                <button
-                  onClick={() => {
-                    setSelectedCategories([]);
-                    setSelectedWorkTypes([]);
-                    setSelectedJobTypes([]);
-                    setCurrentPage(1);
-                  }}
-                  className="text-sm text-zinc-400 hover:text-white transition-colors underline underline-offset-4 ml-1"
-                >
-                  Clear
-                </button>
-              )}
-            </div>
-          </motion.div>
-        </div>
+            {uniqueCategories.length > 0 && (
+              <FilterSection
+                label="Category"
+                options={uniqueCategories}
+                selected={selectedCategories}
+                onChange={(cat) => {
+                  setSelectedCategories(prev => 
+                    prev.includes(cat) ? prev.filter(c => c !== cat) : [...prev, cat]
+                  );
+                  setCurrentPage(1);
+                }}
+              />
+            )}
 
-        {/* Jobs Grid Section */}
-        <div className="relative z-10 mx-auto max-w-7xl mt-8">
-          {loading ? (
-            <div className="flex justify-center items-center h-64">
-              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#0088FF]"></div>
-            </div>
-          ) : filteredJobs.length === 0 ? (
-            <div className="text-center text-zinc-500 py-12">
-              <Briefcase size={48} className="mx-auto mb-4 text-zinc-700" />
-              <p className="text-lg font-semibold text-zinc-300">No jobs found</p>
-              <p className="text-sm mt-2">Try adjusting your search query.</p>
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-              {displayedJobs.map((job) => (
-                <JobCard key={job.id} job={job} hasApplied={appliedJobIds.includes(job._id)} />
-              ))}
-            </div>
-          )}
+            {(selectedCategories.length > 0 || selectedWorkTypes.length > 0 || selectedJobTypes.length > 0) && (
+              <button
+                onClick={() => {
+                  setSelectedCategories([]);
+                  setSelectedWorkTypes([]);
+                  setSelectedJobTypes([]);
+                  setCurrentPage(1);
+                }}
+                className="text-sm text-[#0088FF] hover:text-[#339FFF] font-semibold transition-colors mt-2"
+              >
+                Clear all filters
+              </button>
+            )}
+          </div>
+
+          {/* Jobs List */}
+          <div className="flex-1 w-full">
+            {loading ? (
+              <div className="flex justify-center items-center h-64">
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#0088FF]"></div>
+              </div>
+            ) : filteredJobs.length === 0 ? (
+              <div className="text-center text-zinc-500 py-12 rounded-2xl border border-zinc-800/60 bg-[#16161a]/50">
+                <Briefcase size={48} className="mx-auto mb-4 text-zinc-700" />
+                <p className="text-lg font-semibold text-zinc-300">No jobs found</p>
+                <p className="text-sm mt-2">Try adjusting your search query or filters.</p>
+              </div>
+            ) : (
+              <div className="flex flex-col gap-4">
+                {displayedJobs.map((job) => (
+                  <JobCard key={job.id} job={job} hasApplied={appliedJobIds.includes(job._id)} />
+                ))}
+              </div>
+            )}
+
 
           {/* Pagination Controls */}
           {!loading && totalPages > 1 && (
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              className="flex justify-center items-center gap-6 mt-12 mb-8"
+              className="flex justify-center items-center gap-6 mt-12 mb-8 md:col-start-2 w-full"
             >
               <Button
                 onClick={handlePrevPage}
@@ -375,6 +350,7 @@ export default function BrowseJobsPage() {
               </Button>
             </motion.div>
           )}
+          </div>
         </div>
       </section>
     </div>

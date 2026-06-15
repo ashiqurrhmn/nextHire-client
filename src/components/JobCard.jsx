@@ -25,118 +25,68 @@ export default function JobCard({ job, hasApplied = false }) {
   return (
     <>
       <motion.article
-        initial={{ opacity: 0, y: 30 }}
+        initial={{ opacity: 0, y: 20 }}
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true, margin: "-50px" }}
         transition={{ type: "spring", stiffness: 70, damping: 16 }}
-        whileHover={{
-          y: -8,
-          transition: { type: "spring", stiffness: 300, damping: 20 },
-        }}
-        className="group relative flex flex-col rounded-[24px] border border-zinc-800/60 bg-gradient-to-b from-[#16161a]/90 to-[#0a0a0c]/90 backdrop-blur-xl p-5 sm:p-6 transition-all duration-500 hover:border-[#0088FF]/30 hover:shadow-[0_20px_80px_rgba(0,136,255,0.08),0_0_0_1px_rgba(0,136,255,0.1)] cursor-pointer overflow-hidden"
+        className="group relative flex flex-col sm:flex-row items-start sm:items-center justify-between rounded-[16px] border border-zinc-800/60 bg-[#121214]/80 backdrop-blur-xl p-4 sm:p-5 transition-all duration-300 hover:border-[#0088FF]/30 hover:bg-[#16161a] cursor-pointer overflow-hidden gap-4 sm:gap-6"
       >
-        {/* Decorative background flare */}
-        <div className="absolute -top-24 -right-24 w-56 h-56 bg-gradient-to-bl from-[#0088FF]/10 to-transparent rounded-full blur-[50px] group-hover:from-[#0088FF]/20 transition-all duration-700 pointer-events-none" />
-
-        <div className="relative z-10 flex flex-col h-full">
-          <div className="flex items-start justify-between mb-5">
-            <div className="flex items-center gap-4">
-              <div className="relative">
-                {job.companyLogo || job.logo ? (
-                  <img 
-                    src={job.companyLogo || job.logo} 
-                    alt={`${job.company} logo`} 
-                    className="h-12 w-12 sm:h-14 sm:w-14 rounded-[14px] object-cover border border-white/10 bg-[#1a1a1e] shadow-lg group-hover:scale-105 transition-transform duration-500"
-                  />
-                ) : (
-                  <div
-                    className="flex h-12 w-12 sm:h-14 sm:w-14 items-center justify-center rounded-[14px] text-base font-bold border border-white/10 shadow-lg group-hover:scale-105 transition-transform duration-500"
-                    style={{
-                      backgroundColor: `${job.companyColor}20`,
-                      color: job.companyColor === "#ffffff" ? "#bbb" : job.companyColor,
-                    }}
-                  >
-                    {job.company.charAt(0)}
-                  </div>
-                )}
-                {/* Status indicator dot */}
-                <span className="absolute -bottom-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-[#0a0a0c]">
-                  <span className="h-2 w-2 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]"></span>
-                </span>
-              </div>
-              <div>
-                <p className="text-sm font-bold text-zinc-200 group-hover:text-white transition-colors">{job.company}</p>
-                <div className="flex items-center gap-2 mt-1">
-                  <span className="text-[11px] font-medium text-zinc-500">{job.postedAgo}</span>
-                  <span className="h-1 w-1 rounded-full bg-zinc-700" />
-                  <span className="text-[11px] font-medium text-zinc-500 flex items-center gap-1">
-                    {job.isRemote ? <Globe size={10} className="text-emerald-500/70" /> : <MapPin size={10} className="text-[#0088FF]/70" />}
-                    {job.isRemote ? "Remote" : "On-site"}
-                  </span>
-                </div>
-              </div>
-            </div>
-
-            <div className="flex items-center justify-center h-8 w-8 rounded-full bg-white/5 border border-white/5 text-zinc-400 group-hover:bg-[#0088FF]/10 group-hover:text-[#0088FF] group-hover:border-[#0088FF]/20 transition-all shadow-inner">
-              <OfficeBadge size={14} />
-            </div>
-          </div>
-
-          <h3 className="text-lg sm:text-xl font-extrabold text-white tracking-tight mb-4 group-hover:text-[#0088FF] transition-colors duration-300 leading-snug line-clamp-2">
-            {job.title}
-          </h3>
-
-          <div className="flex flex-wrap items-center gap-2 mb-5">
-            <Chip size="sm" variant="flat" className="bg-[#0088FF]/10 text-[#0088FF] border border-[#0088FF]/20 font-semibold px-2 py-4 rounded-lg">
-              <span className="flex items-center gap-1.5"><Briefcase size={12} /> {job.category}</span>
-            </Chip>
-            <Chip size="sm" variant="flat" className="bg-purple-500/10 text-purple-400 border border-purple-500/20 font-semibold px-2 py-4 rounded-lg">
-              <span className="flex items-center gap-1.5"><Clock size={12} /> {job.type}</span>
-            </Chip>
-          </div>
-
-          
-
-          <div className="mt-auto pt-4 border-t border-zinc-800/60 flex items-center justify-between mb-6">
-            <div>
-              <p className="text-[10px] font-bold text-zinc-500 uppercase tracking-wider mb-1">Salary Range</p>
-              <div className="flex items-center gap-1.5">
-                <TagDollar size={16} className="text-[#0088FF]" />
-                <span className="text-base sm:text-lg font-bold text-white">${job.minSalary}</span>
-                <span className="text-xs text-zinc-600">–</span>
-                <span className="text-base sm:text-lg font-bold text-white">${job.maxSalary}</span>
-              </div>
-            </div>
-            
-            {!job.isRemote && (
-              <div className="text-right">
-                <p className="text-[10px] font-bold text-zinc-500 uppercase tracking-wider mb-1">Location</p>
-                <span className="text-sm font-semibold text-zinc-300">
-                  {job.location?.split(",")[0] || "N/A"}
-                </span>
-              </div>
-            )}
-          </div>
-
-          <div className="flex items-center gap-3">
-            <Button 
-              onPress={() => setIsOpen(true)}
-              className="flex-1 h-11 rounded-xl bg-zinc-800/50 hover:bg-zinc-700 border border-zinc-700/50 hover:border-zinc-500 text-white font-semibold text-sm transition-all shadow-sm"
-            >
-              Details
-            </Button>
-            {hasApplied ? (
-              <div className="flex-1 h-11 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 font-bold text-sm flex justify-center items-center gap-2 cursor-default">
-                <Check size={14} /> Applied
-              </div>
+        <div className="flex items-start gap-4 flex-1">
+          {/* Logo */}
+          <div className="relative shrink-0">
+            {job.companyLogo || job.logo ? (
+              <img 
+                src={job.companyLogo || job.logo} 
+                alt={`${job.company} logo`} 
+                className="h-12 w-12 rounded-[12px] object-cover border border-white/10 bg-[#1a1a1e] shadow-sm"
+              />
             ) : (
-              <Link href={`/browse-jobs/${job._id}`} 
-                className="flex-1 h-11 rounded-xl bg-gradient-to-r from-[#0088FF] to-[#0055FF] hover:from-[#339FFF] hover:to-[#2277FF] text-white font-bold text-sm shadow-[0_4px_14px_rgba(0,136,255,0.3)] transition-all flex justify-center items-center"
+              <div
+                className="flex h-12 w-12 items-center justify-center rounded-[12px] text-lg font-bold border border-white/10 shadow-sm"
+                style={{
+                  backgroundColor: `${job.companyColor}20`,
+                  color: job.companyColor === "#ffffff" ? "#bbb" : job.companyColor,
+                }}
               >
-                Apply Now
-              </Link>
+                {job.company.charAt(0)}
+              </div>
             )}
           </div>
+
+          {/* Info */}
+          <div className="flex flex-col gap-1.5 flex-1 mt-0.5">
+            <h3 className="text-base sm:text-lg font-bold text-white group-hover:text-[#0088FF] transition-colors line-clamp-1">
+              {job.title}
+            </h3>
+            <p className="text-sm font-medium text-zinc-400">
+              {job.company} <span className="mx-1.5">•</span> {job.location || (job.isRemote ? "Remote" : "N/A")}
+            </p>
+
+            <div className="flex flex-wrap items-center gap-4 mt-2">
+              <span className="flex items-center gap-1.5 text-[13px] font-medium text-zinc-300">
+                <TagDollar size={14} className="text-zinc-500" />
+                ${job.minSalary} - ${job.maxSalary}
+              </span>
+              <span className="flex items-center gap-1.5 text-[13px] font-medium text-zinc-300">
+                <Clock size={14} className="text-zinc-500" />
+                {job.type}
+              </span>
+              <span className="flex items-center gap-1.5 text-[13px] font-medium text-zinc-300">
+                <Briefcase size={14} className="text-zinc-500" />
+                {job.category}
+              </span>
+            </div>
+          </div>
+        </div>
+
+        {/* View Button */}
+        <div className="shrink-0 w-full sm:w-auto mt-2 sm:mt-0">
+          <Button 
+            onPress={() => setIsOpen(true)}
+            className="w-full sm:w-auto h-10 rounded-[10px] bg-zinc-800/50 hover:bg-zinc-700 border border-zinc-700/50 text-white font-semibold text-sm transition-all shadow-sm px-5 flex justify-center items-center gap-2"
+          >
+            View <span className="text-lg leading-none mb-0.5">→</span>
+          </Button>
         </div>
       </motion.article>
 

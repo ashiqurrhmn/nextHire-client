@@ -65,6 +65,27 @@ const LogoutIcon = (props) => (
   </svg>
 );
 
+const SearchIcon = (props) => (
+  <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round" {...props}>
+    <circle cx="11" cy="11" r="8" />
+    <line x1="21" y1="21" x2="16.65" y2="16.65" />
+  </svg>
+);
+
+const BookmarkIcon = (props) => (
+  <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round" {...props}>
+    <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z" />
+  </svg>
+);
+
+const CreditCardIcon = (props) => (
+  <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round" {...props}>
+    <rect x="2" y="5" width="20" height="14" rx="2" />
+    <line x1="2" y1="10" x2="22" y2="10" />
+  </svg>
+);
+
+
 export function DashboardSideBar() {
   const pathname = usePathname();
   const router = useRouter();
@@ -112,11 +133,12 @@ export function DashboardSideBar() {
     }
 
     return [
-      { icon: HomeIcon, label: "Home", href: "/" },
-      { icon: GridIcon, label: "Dashboard", href: "/dashboard" },
-      { icon: BriefcaseIcon, label: "Browse Jobs", href: "/jobs" },
-      { icon: FileTextIcon, label: "Applications", href: "/dashboard/applications" },
-      { icon: SettingsIcon, label: "Settings", href: "/dashboard/settings" },
+      { icon: GridIcon, label: "Dashboard", href: "/dashboard/seeker" },
+      { icon: SearchIcon, label: "Jobs", href: "/browse-jobs" },
+      { icon: BookmarkIcon, label: "Saved Jobs", href: "/dashboard/seeker/saved-jobs" },
+      { icon: FileTextIcon, label: "Applications", href: "/dashboard/seeker/applications" },
+      { icon: CreditCardIcon, label: "Billing", href: "/dashboard/seeker/billing" },
+      { icon: SettingsIcon, label: "Settings", href: "/dashboard/seeker/settings" },
     ];
   };
 
@@ -126,7 +148,7 @@ export function DashboardSideBar() {
     if (href === "/") {
       return pathname === "/";
     }
-    if (href === "/dashboard" || href === "/dashboard/recruiter") {
+    if (href === "/dashboard/seeker" || href === "/dashboard/recruiter") {
       return pathname === href;
     }
     return pathname?.startsWith(href);

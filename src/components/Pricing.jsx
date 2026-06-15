@@ -1,18 +1,43 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@heroui/react";
-import { Check, Star, ShieldCheck, Diamond, ChevronDown, Briefcase, Person } from "@gravity-ui/icons";
+import {
+  Check,
+  Star,
+  ShieldCheck,
+  Diamond,
+  ChevronDown,
+  Briefcase,
+  Person,
+} from "@gravity-ui/icons";
 import Link from "next/link";
+import { useSession } from "@/lib/auth-client";
 
 export default function Pricing() {
+  const { data: session } = useSession();
+  const userRole = session?.user?.role; // "seeker" or "recruiter"
+
   const [activeTab, setActiveTab] = useState("seekers");
   const [openFaq, setOpenFaq] = useState(null);
+
+  // Auto-select the correct tab based on user role
+  useEffect(() => {
+    if (userRole === "recruiter") setActiveTab("recruiters");
+    else if (userRole === "seeker") setActiveTab("seekers");
+  }, [userRole]);
+
+  // Check if user is viewing plans that don't match their role
+  const isWrongRole = userRole && (
+    (activeTab === "seekers" && userRole !== "seeker") ||
+    (activeTab === "recruiters" && userRole !== "recruiter")
+  );
 
   const seekerPlans = [
     {
       name: "Free",
+      id: "seeker_free",
       price: "$0",
       period: "/forever",
       description: "Perfect for casual job seekers just starting their search.",
@@ -21,7 +46,7 @@ export default function Pricing() {
         "Browse & save up to 10 jobs",
         "Apply to up to 3 jobs per month",
         "Basic profile",
-        "Email alerts"
+        "Email alerts",
       ],
       buttonText: "Current Plan",
       buttonVariant: "bordered",
@@ -29,6 +54,7 @@ export default function Pricing() {
     },
     {
       name: "Pro",
+      id: "seeker_pro",
       price: "$19",
       period: "/month",
       description: "Ideal for active seekers who want more opportunities.",
@@ -37,7 +63,7 @@ export default function Pricing() {
         "Apply to up to 30 jobs per month",
         "Unlimited saved jobs",
         "Application tracking",
-        "Salary insights"
+        "Salary insights",
       ],
       buttonText: "Upgrade to Pro",
       buttonVariant: "solid",
@@ -47,6 +73,7 @@ export default function Pricing() {
     },
     {
       name: "Premium",
+      id: "seeker_premium",
       price: "$39",
       period: "/month",
       description: "The ultimate toolkit for serious professionals.",
@@ -56,19 +83,20 @@ export default function Pricing() {
         "Unlimited applications",
         "Profile boost to recruiters",
         "Early access to new jobs",
-        "Priority support"
+        "Priority support",
       ],
       buttonText: "Upgrade to Premium",
       buttonVariant: "solid",
       popular: false,
       gradient: "from-purple-500 to-indigo-600",
       stripePriceId: "price_1TiKAB3pA2swKjtHCOXIL4bn",
-    }
+    },
   ];
 
   const recruiterPlans = [
     {
       name: "Free",
+      id: "recruiter_free",
       price: "$0",
       period: "/forever",
       description: "Great for a company's first year of hiring.",
@@ -76,7 +104,7 @@ export default function Pricing() {
       features: [
         "Up to 3 active job posts",
         "Basic applicant management",
-        "Standard listing visibility"
+        "Standard listing visibility",
       ],
       buttonText: "Current Plan",
       buttonVariant: "bordered",
@@ -84,6 +112,7 @@ export default function Pricing() {
     },
     {
       name: "Growth",
+      id: "recruiter_growth",
       price: "$49",
       period: "/month",
       description: "For growing teams that need to hire fast.",
@@ -92,7 +121,7 @@ export default function Pricing() {
         "Up to 10 active job posts",
         "Applicant tracking",
         "Basic analytics",
-        "Email support"
+        "Email support",
       ],
       buttonText: "Upgrade to Growth",
       buttonVariant: "solid",
@@ -102,6 +131,7 @@ export default function Pricing() {
     },
     {
       name: "Enterprise",
+      id: "recruiter_enterprise",
       price: "$149",
       period: "/month",
       description: "For scaling companies with advanced needs.",
@@ -112,33 +142,37 @@ export default function Pricing() {
         "Featured job listings",
         "Team collaboration",
         "Custom branding",
-        "Priority support"
+        "Priority support",
       ],
       buttonText: "Upgrade to Enterprise",
       buttonVariant: "solid",
       popular: false,
       gradient: "from-purple-500 to-indigo-600",
       stripePriceId: "price_1TiKAB3pA2swKjtHCOXIL4bn",
-    }
+    },
   ];
 
   const faqs = [
     {
       question: "How does the cancellation process work?",
-      answer: "You can cancel your subscription at any time from your account settings. Once canceled, you will retain access to your premium features until the end of your current billing cycle."
+      answer:
+        "You can cancel your subscription at any time from your account settings. Once canceled, you will retain access to your premium features until the end of your current billing cycle.",
     },
     {
       question: "What is your refund policy?",
-      answer: "We offer a 14-day money-back guarantee for all our paid plans. If you're not completely satisfied within your first two weeks, simply contact support for a full refund."
+      answer:
+        "We offer a 14-day money-back guarantee for all our paid plans. If you're not completely satisfied within your first two weeks, simply contact support for a full refund.",
     },
     {
       question: "What payment methods do you accept?",
-      answer: "We accept all major credit cards including Visa, Mastercard, American Express, and Discover. We also support PayPal and Apple Pay for your convenience."
+      answer:
+        "We accept all major credit cards including Visa, Mastercard, American Express, and Discover. We also support PayPal and Apple Pay for your convenience.",
     },
     {
       question: "Can I switch plans later?",
-      answer: "Absolutely! You can upgrade or downgrade your plan at any time. If you upgrade, the prorated difference will be charged immediately. If you downgrade, the new rate will apply at your next billing cycle."
-    }
+      answer:
+        "Absolutely! You can upgrade or downgrade your plan at any time. If you upgrade, the prorated difference will be charged immediately. If you downgrade, the new rate will apply at your next billing cycle.",
+    },
   ];
 
   const currentPlans = activeTab === "seekers" ? seekerPlans : recruiterPlans;
@@ -151,22 +185,26 @@ export default function Pricing() {
 
       <div className="relative z-10 max-w-7xl mx-auto w-full">
         <div className="text-center mb-10 md:mb-14">
-          <motion.h2 
+          <motion.h2
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             className="text-4xl md:text-5xl lg:text-6xl font-extrabold tracking-tight mb-6 text-white"
           >
-            Choose your <span className="bg-gradient-to-r from-[#0088FF] to-purple-500 bg-clip-text text-transparent">path to success</span>
+            Choose your{" "}
+            <span className="bg-gradient-to-r from-[#0088FF] to-purple-500 bg-clip-text text-transparent">
+              path to success
+            </span>
           </motion.h2>
-          <motion.p 
+          <motion.p
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ delay: 0.1 }}
             className="text-zinc-400 text-lg md:text-xl max-w-2xl mx-auto"
           >
-            Unlock more opportunities and hire faster with our flexible pricing plans.
+            Unlock more opportunities and hire faster with our flexible pricing
+            plans.
           </motion.p>
         </div>
 
@@ -187,14 +225,14 @@ export default function Pricing() {
               <Briefcase size={18} />
               For Recruiters
             </button>
-            
+
             {/* Animated Highlight */}
-            <motion.div 
+            <motion.div
               className="absolute top-1.5 bottom-1.5 bg-zinc-800 rounded-full border border-zinc-700 shadow-sm"
               initial={false}
-              animate={{ 
-                left: activeTab === "seekers" ? "0.375rem" : "50%", 
-                width: "calc(50% - 0.375rem)" 
+              animate={{
+                left: activeTab === "seekers" ? "0.375rem" : "50%",
+                width: "calc(50% - 0.375rem)",
               }}
               transition={{ type: "spring", stiffness: 300, damping: 25 }}
             />
@@ -209,10 +247,15 @@ export default function Pricing() {
                 initial={{ opacity: 0, y: 30, scale: 0.95 }}
                 animate={{ opacity: 1, y: 0, scale: 1 }}
                 exit={{ opacity: 0, y: -20, scale: 0.95 }}
-                transition={{ delay: index * 0.1, type: "spring", stiffness: 80, duration: 0.4 }}
+                transition={{
+                  delay: index * 0.1,
+                  type: "spring",
+                  stiffness: 80,
+                  duration: 0.4,
+                }}
                 className={`relative bg-[#121214]/80 backdrop-blur-xl border rounded-3xl p-8 flex flex-col transition-all hover:-translate-y-2 duration-300 ${
-                  plan.popular 
-                    ? "border-[#0088FF]/50 shadow-[0_0_40px_rgba(0,136,255,0.15)] md:scale-105 z-10" 
+                  plan.popular
+                    ? "border-[#0088FF]/50 shadow-[0_0_40px_rgba(0,136,255,0.15)] md:scale-105 z-10"
                     : "border-zinc-800 opacity-90 hover:opacity-100"
                 }`}
               >
@@ -230,10 +273,18 @@ export default function Pricing() {
                 </div>
 
                 <div className="mb-6">
-                  <p className="text-zinc-400 text-sm mb-4 min-h-[40px]">{plan.description}</p>
+                  <p className="text-zinc-400 text-sm mb-4 min-h-[40px]">
+                    {plan.description}
+                  </p>
                   <div className="flex items-end gap-1">
-                    <span className="text-4xl sm:text-5xl font-extrabold text-white">{plan.price}</span>
-                    {plan.period && <span className="text-zinc-500 font-medium mb-1">{plan.period}</span>}
+                    <span className="text-4xl sm:text-5xl font-extrabold text-white">
+                      {plan.price}
+                    </span>
+                    {plan.period && (
+                      <span className="text-zinc-500 font-medium mb-1">
+                        {plan.period}
+                      </span>
+                    )}
                   </div>
                 </div>
 
@@ -248,21 +299,31 @@ export default function Pricing() {
                   ))}
                 </div>
 
-                <form action="/api/checkout_sessions" method="POST">
-      <section>
-        <button type="submit" role="link"  className={`w-full h-12 rounded-xl font-bold text-base transition-all ${
-                      plan.popular
-                        ? "bg-gradient-to-r from-[#0088FF] to-[#0055FF] text-white shadow-[0_4px_20px_rgba(0,136,255,0.3)] hover:shadow-[0_4px_25px_rgba(0,136,255,0.5)]"
-                        : plan.gradient 
-                          ? `bg-gradient-to-r ${plan.gradient} text-white shadow-lg`
-                          : "bg-zinc-800 hover:bg-zinc-700 text-white"
-                    }`}>
-          Checkout
-        </button>
-      </section>
-    </form>
-
-                
+                {plan.gradient && (
+                  <form action="/api/checkout_sessions" method="POST">
+                    <input type="hidden" name="price_id" value={plan.id} />
+                    <section>
+                      <button
+                        type="submit"
+                        role="link"
+                        disabled={isWrongRole || !session?.user}
+                        className={`w-full h-12 rounded-xl font-bold text-base transition-all disabled:opacity-50 disabled:cursor-not-allowed ${
+                          plan.popular
+                            ? "bg-gradient-to-r from-[#0088FF] to-[#0055FF] text-white shadow-[0_4px_20px_rgba(0,136,255,0.3)] hover:shadow-[0_4px_25px_rgba(0,136,255,0.5)]"
+                            : plan.gradient
+                              ? `bg-gradient-to-r ${plan.gradient} text-white shadow-lg`
+                              : "bg-zinc-800 hover:bg-zinc-700 text-white"
+                        }`}
+                      >
+                        {!session?.user
+                          ? "Sign in to Upgrade"
+                          : isWrongRole
+                            ? `Only for ${activeTab === "seekers" ? "Job Seekers" : "Recruiters"}`
+                            : "Checkout"}
+                      </button>
+                    </section>
+                  </form>
+                )}
               </motion.div>
             ))}
           </AnimatePresence>
@@ -271,8 +332,12 @@ export default function Pricing() {
         {/* FAQ Section */}
         <div className="max-w-3xl mx-auto mt-20">
           <div className="text-center mb-12">
-            <h3 className="text-3xl font-bold text-white mb-4">Frequently Asked Questions</h3>
-            <p className="text-zinc-400">Everything you need to know about the product and billing.</p>
+            <h3 className="text-3xl font-bold text-white mb-4">
+              Frequently Asked Questions
+            </h3>
+            <p className="text-zinc-400">
+              Everything you need to know about the product and billing.
+            </p>
           </div>
           <div className="space-y-4">
             {faqs.map((faq, index) => (
@@ -288,7 +353,9 @@ export default function Pricing() {
                   onClick={() => setOpenFaq(openFaq === index ? null : index)}
                   className="w-full px-6 py-5 flex items-center justify-between text-left focus:outline-none"
                 >
-                  <span className="text-lg font-semibold text-white">{faq.question}</span>
+                  <span className="text-lg font-semibold text-white">
+                    {faq.question}
+                  </span>
                   <motion.div
                     animate={{ rotate: openFaq === index ? 180 : 0 }}
                     transition={{ duration: 0.3 }}

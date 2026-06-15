@@ -53,6 +53,7 @@ export default function SignUpPage() {
     }
 
     setIsSubmitting(true);
+    const plan = role == 'seeker' ? 'seeker_free' : 'recruiter_free'
 
     try {
       const { error } = await signUp.email({
@@ -60,6 +61,7 @@ export default function SignUpPage() {
         email: email.trim(),
         role,
         password,
+        plan,
       });
 
       if (error) {

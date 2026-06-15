@@ -1,57 +1,38 @@
-"use client";
+import { stripe } from '@/lib/stripe'
+import { redirect } from 'next/navigation'
+import SuccessClient from './SuccessClient'
+import { createSubscription } from '@/lib/actions/subscription'
 
-import { loadStripe } from "@stripe/stripe-js";
-import { useEffect } from "react";
-import { useSearchParams } from "next/navigation";
+export default async function Success({ searchParams }) {
+  const { session_id } = await searchParams
 
-// Load Stripe server-side to avoid leaking API keys
-const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY || "");
+  // In development, if no session_id is provided, show a mock success page so the design can be previewed
+  if (!session_id) {
+    if (process.env.NODE_ENV === 'development') {
+      return <SuccessClient customerEmail="test@nexthire.com" />
+    }
+    throw new Error('Please provide a valid session_id (`cs_test_...`)')
+  }
 
-export default function SuccessPage() {
-  const searchParams = useSearchParams();
-  const paymentIntentId = searchParams.get("payment_intent");
+  const session = await stripe.checkout.sessions.retrieve(session_id, {
+    expand: ['line_items', 'payment_intent']
+  })
 
-  useEffect(() => {
-    if (!paymentIntentId) return;
+  const { status, customer_details, metadata } = session
+  const customerEmail = customer_details?.email
 
-    const checkPaymentStatus = async () => {
-      try {
-        // Fetch payment status from server
-        const response = await fetch("/api/checkout_sessions/payment-status", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ paymentIntentId })
-        });
+  if (status === 'open') {
+    return redirect('/')
+  }
 
-        const data = await response.json();
+  if (status === 'complete') {
+    // Update the user's plan in the database using metadata from the Stripe session
+    const subsInfo = {
+      email: customerEmail,
+      planId: metadata?.planId
+    }
+    await createSubscription(subsInfo)
 
-        if (data.success) {
-          console.log("Payment successful:", data);
-          // You can redirect to dashboard or show success message
-        } else {
-          console.error("Payment failed:", data);
-        }
-      } catch (error) {
-        console.error("Error checking payment status:", error);
-      }
-    };
-
-    checkPaymentStatus();
-  }, [paymentIntentId]);
-
-  return (
-    <div className="min-h-screen bg-black flex items-center justify-center">
-      <div className="text-center">
-        <h1 className="text-4xl font-bold mb-4 text-white">Thank You!</h1>
-        <p className="text-zinc-400">
-          {paymentIntentId ? "Processing your payment..." : "Waiting for payment confirmation..."}
-        </p>
-        {paymentIntentId && (
-          <div className="mt-4 text-zinc-500">
-            <p>Payment Intent: {paymentIntentId}</p>
-          </div>
-        )}
-      </div>
-    </div>
-  );
+    return <SuccessClient customerEmail={customerEmail} />
+  }
 }

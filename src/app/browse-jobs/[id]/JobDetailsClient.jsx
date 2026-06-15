@@ -8,6 +8,7 @@ import Link from "next/link";
 import ApplyModal from "@/components/ApplyModal";
 import { useSession } from "@/lib/auth-client";
 import { useRouter, useParams } from "next/navigation";
+import { getPlanById } from "@/lib/api/plans";
 
 export default function JobDetailsClient({ job, initialHasApplied = false, totalApplicationsCount = 0 }) {
   const [isApplyModalOpen, setIsApplyModalOpen] = useState(false);
@@ -22,6 +23,23 @@ export default function JobDetailsClient({ job, initialHasApplied = false, total
   const params = useParams();
   const id = params?.id;
 
+  const [plan, setPlan] = useState(null);
+  
+  useEffect(() => {
+    if (session?.user?.plan) {
+      getPlanById(session.user.plan).then(data => {
+        console.log("Fetched plan:", data);
+        setPlan(data);
+      }).catch(err => console.error("Error fetching plan:", err));
+    }
+  }, [session?.user?.plan]);
+
+  // Determine limit from plan data or fallback based on plan id
+  const planLimit = plan?.application_limit !== undefined 
+    ? plan.application_limit 
+    : (session?.user?.plan === 'seeker_premium' ? Infinity : session?.user?.plan === 'seeker_pro' ? 30 : 3);
+  const isUnlimited = planLimit === Infinity || planLimit === -1;
+
   const handleApplyClick = () => {
     if (!session?.user) {
       router.push(`/auth/signin?redirect=/browse-jobs/${id}`);
@@ -33,7 +51,7 @@ export default function JobDetailsClient({ job, initialHasApplied = false, total
       return;
     }
 
-    if (totalApplicationsCount >= 3) {
+    if (!isUnlimited && totalApplicationsCount >= planLimit) {
       router.push("/pricing");
       return;
     }
@@ -86,23 +104,34 @@ export default function JobDetailsClient({ job, initialHasApplied = false, total
               <Briefcase size={20} className="text-[#0088FF]" />
             </div>
             <div>
-              <p className="text-sm sm:text-base font-semibold text-white mb-0.5">Free Plan Quota</p>
-              <p className="text-xs sm:text-sm text-zinc-400">You have applied to {totalApplicationsCount} out of 3 jobs.</p>
+              <p className="text-sm sm:text-base font-semibold text-white mb-0.5">{plan?.name || "Free"} Plan Quota</p>
+              <p className="text-xs sm:text-sm text-zinc-400">
+                {isUnlimited 
+                  ? `You have applied to ${totalApplicationsCount} jobs (Unlimited).`
+                  : `You have applied to ${totalApplicationsCount} out of ${planLimit} jobs.`}
+              </p>
             </div>
           </div>
           <div className="flex flex-col items-start sm:items-end w-full sm:w-auto">
-            <div className="flex gap-1.5 mb-1.5">
-              {[1, 2, 3].map((num) => (
-                <div key={num} className={`h-1.5 w-8 rounded-full transition-all duration-500 ${num <= totalApplicationsCount ? 'bg-gradient-to-r from-[#0088FF] to-[#0055FF] shadow-[0_0_8px_rgba(0,136,255,0.5)]' : 'bg-zinc-800'}`} />
-              ))}
-            </div>
-            {totalApplicationsCount >= 3 ? (
+            {!isUnlimited && (
+              <div className="flex gap-[2px] sm:gap-1 mb-1.5 w-full sm:w-[280px] justify-start sm:justify-end">
+                {Array.from({ length: planLimit }).map((_, i) => {
+                  const num = i + 1;
+                  return (
+                    <div key={num} className={`h-1.5 flex-1 max-w-[32px] rounded-full transition-all duration-500 ${num <= totalApplicationsCount ? 'bg-gradient-to-r from-[#0088FF] to-[#0055FF] shadow-[0_0_8px_rgba(0,136,255,0.5)]' : 'bg-zinc-800'}`} />
+                  );
+                })}
+              </div>
+            )}
+            {!isUnlimited && totalApplicationsCount >= planLimit ? (
               <Link href="/pricing" className="text-[11px] font-bold tracking-wider uppercase text-purple-400 hover:text-purple-300 transition-colors flex items-center gap-1">
                 Upgrade Plan 
                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14"></path><path d="m12 5 7 7-7 7"></path></svg>
               </Link>
+            ) : isUnlimited ? (
+              <span className="text-[11px] font-bold tracking-wider uppercase text-[#0088FF]">Unlimited applications</span>
             ) : (
-              <span className="text-[11px] font-bold tracking-wider uppercase text-[#0088FF]">{Math.max(0, 3 - totalApplicationsCount)} remaining</span>
+              <span className="text-[11px] font-bold tracking-wider uppercase text-[#0088FF]">{Math.max(0, planLimit - totalApplicationsCount)} remaining</span>
             )}
           </div>
         </motion.div>
@@ -156,9 +185,9 @@ export default function JobDetailsClient({ job, initialHasApplied = false, total
             <Button
               onPress={handleApplyClick}
               isDisabled={hasApplied}
-              className={`w-full md:w-auto h-11 px-6 rounded-xl font-bold text-sm shadow-[0_6px_20px_rgba(0,136,255,0.3)] transition-all shrink-0 data-[disabled=true]:opacity-50 text-white ${totalApplicationsCount >= 3 && !hasApplied ? 'bg-gradient-to-r from-purple-500 to-indigo-600 hover:from-purple-400 hover:to-indigo-500 shadow-[0_6px_20px_rgba(168,85,247,0.3)]' : 'bg-gradient-to-r from-[#0088FF] to-[#0055FF] hover:from-[#339FFF] hover:to-[#2277FF]'}`}
+              className={`w-full md:w-auto h-11 px-6 rounded-xl font-bold text-sm shadow-[0_6px_20px_rgba(0,136,255,0.3)] transition-all shrink-0 data-[disabled=true]:opacity-50 text-white ${!isUnlimited && totalApplicationsCount >= planLimit && !hasApplied ? 'bg-gradient-to-r from-purple-500 to-indigo-600 hover:from-purple-400 hover:to-indigo-500 shadow-[0_6px_20px_rgba(168,85,247,0.3)]' : 'bg-gradient-to-r from-[#0088FF] to-[#0055FF] hover:from-[#339FFF] hover:to-[#2277FF]'}`}
             >
-              {hasApplied ? "Applied" : totalApplicationsCount >= 3 ? "Upgrade to Apply" : "Apply Now"}
+              {hasApplied ? "Applied" : (!isUnlimited && totalApplicationsCount >= planLimit) ? "Upgrade to Apply" : "Apply Now"}
             </Button>
           </div>
 

@@ -283,13 +283,42 @@ const RecruiterJobsPage = ({ company, initialJobs }) => {
           <h2 className="text-3xl font-bold text-white tracking-tight">Manage Job Openings</h2>
           <p className="text-sm text-zinc-500 mt-1">Review active, closed, and draft job postings for your organization.</p>
         </div>
-        <Link href="/dashboard/recruiter/jobs/new">
-          <Button className="h-11 rounded-xl bg-gradient-to-r from-[#0088FF] to-[#0055FF] px-5 text-sm font-bold text-white shadow-lg shadow-[#0088FF]/20 transition-all hover:from-[#339FFF] hover:to-[#2277FF] hover:scale-[1.02] active:scale-[0.98] cursor-pointer">
-            <Plus size={16} className="mr-2" />
-            Post a New Job
-          </Button>
-        </Link>
+        {company?.status === 'approved' ? (
+          <Link href="/dashboard/recruiter/jobs/new">
+            <Button className="h-11 rounded-xl bg-gradient-to-r from-[#0088FF] to-[#0055FF] px-5 text-sm font-bold text-white shadow-lg shadow-[#0088FF]/20 transition-all hover:from-[#339FFF] hover:to-[#2277FF] hover:scale-[1.02] active:scale-[0.98] cursor-pointer">
+              <Plus size={16} className="mr-2" />
+              Post a New Job
+            </Button>
+          </Link>
+        ) : (
+          <div className="relative group">
+            <Button 
+              isDisabled
+              className="h-11 rounded-xl bg-zinc-800 px-5 text-sm font-bold text-zinc-500 cursor-not-allowed opacity-60"
+            >
+              <Plus size={16} className="mr-2" />
+              Post a New Job
+            </Button>
+            <div className="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 hidden group-hover:block z-50">
+              <div className="bg-zinc-900 border border-amber-900/50 text-amber-400 text-xs font-medium px-3 py-2 rounded-lg shadow-xl whitespace-nowrap">
+                Company must be approved by admin first
+              </div>
+            </div>
+          </div>
+        )}
       </div>
+
+      {/* Company Not Approved Warning */}
+      {company && company.status !== 'approved' && (
+        <div className="mb-6 flex items-center gap-3 rounded-xl border border-amber-900/50 bg-amber-950/10 p-4 text-sm text-amber-400 backdrop-blur-sm">
+          <svg width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24" className="shrink-0">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126ZM12 15.75h.007v.008H12v-.008Z" />
+          </svg>
+          <span>
+            Your company <strong>&quot;{company.name}&quot;</strong> is <span className="inline-flex items-center ml-1 px-1.5 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider border border-amber-900/40 bg-amber-950/30 text-amber-500">{company.status || 'pending'}</span>. Job posting is disabled until an admin approves your company.
+          </span>
+        </div>
+      )}
 
       {/* Demo Mode Notice */}
       {error && (

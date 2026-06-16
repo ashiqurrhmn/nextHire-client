@@ -257,11 +257,23 @@ export default function PostJobForm({company}) {
             </p>
             <p className="mt-1 text-sm font-bold text-white">Public</p>
           </div>
-          <div className="rounded-xl border border-emerald-900/50 bg-emerald-950/20 px-4 py-3">
-            <p className="text-[11px] font-semibold uppercase tracking-wider text-emerald-500">
+          <div className={`rounded-xl border px-4 py-3 ${
+            company.status === 'approved' 
+              ? 'border-emerald-900/50 bg-emerald-950/20' 
+              : company.status === 'rejected'
+              ? 'border-red-900/50 bg-red-950/20'
+              : 'border-amber-900/50 bg-amber-950/20'
+          }`}>
+            <p className={`text-[11px] font-semibold uppercase tracking-wider ${
+              company.status === 'approved' ? 'text-emerald-500' : company.status === 'rejected' ? 'text-red-500' : 'text-amber-500'
+            }`}>
               Company
             </p>
-            <p className="mt-1 text-sm font-bold text-emerald-300">Approved</p>
+            <p className={`mt-1 text-sm font-bold ${
+              company.status === 'approved' ? 'text-emerald-300' : company.status === 'rejected' ? 'text-red-300' : 'text-amber-300'
+            }`}>
+              {company.status === 'approved' ? 'Approved' : company.status === 'rejected' ? 'Rejected' : 'Pending'}
+            </p>
           </div>
         </div>
       </div>

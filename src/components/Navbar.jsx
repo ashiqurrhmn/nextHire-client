@@ -17,9 +17,11 @@ export default function Navbar() {
   const userName = user?.name || user?.email || "User";
   // console.log(session);
 
-  const dashboardHref = user?.role === "recruiter" 
-    ? "/dashboard/recruiter" 
-    : "/dashboard/seeker";
+  const dashboardHref = user?.role === "admin"
+    ? "/dashboard/admin"
+    : user?.role === "recruiter" 
+      ? "/dashboard/recruiter" 
+      : "/dashboard/seeker";
 
   const handleSignOut = async () => {
     setIsSigningOut(true);

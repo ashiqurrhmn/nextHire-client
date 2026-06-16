@@ -207,6 +207,13 @@ export default function MyCompaniesPage({recruiter, recruiterCompany}) {
         </span>
       );
     }
+    if (status === "rejected") {
+      return (
+        <span className="bg-red-950/20 text-red-400 border border-red-900/40 text-[9px] font-bold tracking-wider uppercase px-2.5 py-0.5 rounded-full shrink-0">
+          Rejected
+        </span>
+      );
+    }
     return (
       <span className="bg-amber-950/20 text-amber-500 border border-amber-900/40 text-[9px] font-bold tracking-wider uppercase px-2.5 py-0.5 rounded-full shrink-0">
         Pending

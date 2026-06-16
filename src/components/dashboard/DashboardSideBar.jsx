@@ -85,6 +85,16 @@ const CreditCardIcon = (props) => (
   </svg>
 );
 
+const UsersIcon = (props) => (
+  <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round" {...props}>
+    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+    <circle cx="9" cy="7" r="4" />
+    <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
+    <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+  </svg>
+);
+
+
 
 export function DashboardSideBar() {
   const pathname = usePathname();
@@ -132,6 +142,17 @@ export function DashboardSideBar() {
       ];
     }
 
+    if (userRole === "admin") {
+      return [
+        { icon: GridIcon, label: "Dashboard", href: "/dashboard/admin" },
+        { icon: UsersIcon, label: "Users", href: "/dashboard/admin/users" },
+        { icon: CompanyIcon, label: "Companies", href: "/dashboard/admin/companies" },
+        { icon: BriefcaseIcon, label: "Jobs", href: "/dashboard/admin/jobs" },
+        { icon: CreditCardIcon, label: "Payments", href: "/dashboard/admin/payments" },
+        { icon: SettingsIcon, label: "Settings", href: "/dashboard/admin/settings" },
+      ];
+    }
+
     return [
       { icon: GridIcon, label: "Dashboard", href: "/dashboard/seeker" },
       { icon: SearchIcon, label: "Jobs", href: "/browse-jobs" },
@@ -148,7 +169,7 @@ export function DashboardSideBar() {
     if (href === "/") {
       return pathname === "/";
     }
-    if (href === "/dashboard/seeker" || href === "/dashboard/recruiter") {
+    if (href === "/dashboard/seeker" || href === "/dashboard/recruiter" || href === "/dashboard/admin") {
       return pathname === href;
     }
     return pathname?.startsWith(href);

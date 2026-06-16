@@ -24,7 +24,12 @@ export const serverMutation = async (path, data) => {
         body: JSON.stringify(data),
     });
 
-    // Handle errors
+    const json = await res.json();
 
-    return res.json();
+    // Handle non-OK responses by returning the error
+    if (!res.ok) {
+        return { error: json.error || `Request failed with status ${res.status}` };
+    }
+
+    return json;
 };

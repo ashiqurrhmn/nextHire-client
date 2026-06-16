@@ -9,6 +9,7 @@ import { getAllJobs } from "@/lib/api/jobs";
 import JobCard from "@/components/JobCard";
 import { useSession } from "@/lib/auth-client";
 import { getMyAppliedJobIds } from "@/lib/actions/applications";
+import { getSavedJobIds } from "@/lib/api/saved-jobs";
 
 const colors = [
   "#635BFF", "#A259FF", "#10A37F", "#FF6B6B", "#5E6AD2", "#0088FF"
@@ -56,6 +57,7 @@ const FilterSection = ({ label, options, selected, onChange }) => {
 };
 
 export default function BrowseJobsPage() {
+  const [showFilters, setShowFilters] = useState(false);
   const [jobs, setJobs] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
@@ -64,6 +66,7 @@ export default function BrowseJobsPage() {
   const [selectedWorkTypes, setSelectedWorkTypes] = useState([]);
   const [selectedJobTypes, setSelectedJobTypes] = useState([]);
   const [appliedJobIds, setAppliedJobIds] = useState([]);
+  const [savedJobIds, setSavedJobIds] = useState([]);
   const { data: session } = useSession();
   const jobsPerPage = 9;
 
@@ -129,21 +132,27 @@ export default function BrowseJobsPage() {
     fetchJobs();
   }, []);
 
-  // Fetch applied job IDs when user session is available
+  // Fetch applied and saved job IDs when user session is available
   useEffect(() => {
-    const fetchApplied = async () => {
+    const fetchUserData = async () => {
       if (session?.user?.id) {
         try {
-          const res = await getMyAppliedJobIds(session.user.id);
-          if (res?.appliedJobIds) {
-            setAppliedJobIds(res.appliedJobIds);
+          const [appliedRes, savedRes] = await Promise.all([
+            getMyAppliedJobIds(session.user.id),
+            getSavedJobIds(session.user.id)
+          ]);
+          if (appliedRes?.appliedJobIds) {
+            setAppliedJobIds(appliedRes.appliedJobIds);
+          }
+          if (Array.isArray(savedRes)) {
+            setSavedJobIds(savedRes);
           }
         } catch (err) {
-          console.error("Failed to fetch applied jobs:", err);
+          console.error("Failed to fetch user job data:", err);
         }
       }
     };
-    fetchApplied();
+    fetchUserData();
   }, [session?.user?.id]);
 
   const filteredJobs = jobs.filter(job => {
@@ -215,8 +224,8 @@ export default function BrowseJobsPage() {
             transition={{ type: "spring", stiffness: 80, damping: 14, delay: 0.25 }}
             className="w-full max-w-2xl mb-12"
           >
-            <div className="w-full rounded-2xl border border-zinc-800/80 bg-[#121214]/90 backdrop-blur-md p-2 flex items-center gap-2 shadow-[0_12px_40px_rgba(0,0,0,0.5)]">
-              <div className="flex-1 flex items-center gap-3 px-3 py-3">
+            <div className="w-full rounded-2xl border border-zinc-800/60 bg-[#121214]/90 backdrop-blur-md p-2 flex flex-col sm:flex-row items-stretch sm:items-center gap-2 shadow-[0_12px_40px_rgba(0,0,0,0.5)]">
+              <div className="flex-1 flex items-center gap-3 px-3 py-2 sm:py-3 border-b sm:border-b-0 border-zinc-800/60">
                 <Magnifier size={18} className="text-zinc-500 shrink-0" />
                 <input
                   type="text"
@@ -230,7 +239,7 @@ export default function BrowseJobsPage() {
                 />
               </div>
               <Button
-                className="h-11 rounded-[14px] bg-gradient-to-r from-[#0088FF] to-[#0055FF] px-5 text-sm font-bold text-white shadow-[0_4px_14px_rgba(0,136,255,0.3)] hover:from-[#339FFF] hover:to-[#2277FF]"
+                className="h-11 w-full sm:w-auto rounded-[14px] bg-gradient-to-r from-[#0088FF] to-[#0055FF] px-8 text-sm font-bold text-white shadow-[0_4px_14px_rgba(0,136,255,0.3)] hover:from-[#339FFF] hover:to-[#2277FF]"
               >
                 Search
               </Button>
@@ -243,8 +252,20 @@ export default function BrowseJobsPage() {
         <div className="relative z-30 mx-auto max-w-7xl mt-8 flex flex-col md:flex-row gap-8 items-start">
           
           {/* Filters Sidebar */}
-          <div className="w-full md:w-64 shrink-0 rounded-2xl border border-zinc-800/60 bg-gradient-to-b from-[#16161a]/90 to-[#0a0a0c]/90 backdrop-blur-xl p-6">
-            <h2 className="text-lg font-extrabold text-white mb-6">Filters</h2>
+          <div className="w-full md:w-64 shrink-0">
+            {/* Mobile Filter Toggle */}
+            <div className="md:hidden flex justify-between items-center mb-4">
+              <h2 className="text-xl font-extrabold text-white">Filters</h2>
+              <Button 
+                onPress={() => setShowFilters(!showFilters)} 
+                className="h-9 px-4 rounded-xl bg-zinc-800 text-white font-semibold text-xs border border-zinc-700"
+              >
+                {showFilters ? "Hide Filters" : "Show Filters"}
+              </Button>
+            </div>
+
+            <div className={`rounded-2xl border border-zinc-800/60 bg-gradient-to-b from-[#16161a]/90 to-[#0a0a0c]/90 backdrop-blur-xl p-6 ${showFilters ? 'block' : 'hidden md:block'}`}>
+              <h2 className="hidden md:block text-lg font-extrabold text-white mb-6">Filters</h2>
 
             {uniqueJobTypes.length > 0 && (
               <FilterSection
@@ -299,6 +320,7 @@ export default function BrowseJobsPage() {
                 Clear all filters
               </button>
             )}
+            </div>
           </div>
 
           {/* Jobs List */}
@@ -316,7 +338,16 @@ export default function BrowseJobsPage() {
             ) : (
               <div className="flex flex-col gap-4">
                 {displayedJobs.map((job) => (
-                  <JobCard key={job.id} job={job} hasApplied={appliedJobIds.includes(job._id)} />
+                  <JobCard 
+                    key={job.id} 
+                    job={job} 
+                    hasApplied={appliedJobIds.includes(job._id || job.id)} 
+                    isSavedProp={savedJobIds.includes(job._id || job.id)}
+                    onSaveToggle={(id, isSaved) => {
+                      if (isSaved) setSavedJobIds(prev => [...prev, id]);
+                      else setSavedJobIds(prev => prev.filter(i => i !== id));
+                    }}
+                  />
                 ))}
               </div>
             )}
@@ -327,7 +358,7 @@ export default function BrowseJobsPage() {
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              className="flex justify-center items-center gap-6 mt-12 mb-8 md:col-start-2 w-full"
+              className="flex justify-center items-center gap-3 sm:gap-6 mt-12 mb-8 md:col-start-2 w-full flex-wrap"
             >
               <Button
                 onClick={handlePrevPage}

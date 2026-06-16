@@ -1,13 +1,44 @@
 "use client";
 
 import { useState } from "react";
+import { useSession } from "@/lib/auth-client";
 import { motion, AnimatePresence } from "framer-motion";
-import { Chip, Button } from "@heroui/react";
-import { Briefcase, Clock, Globe, MapPin, TagDollar, OfficeBadge, Check, Star } from "@gravity-ui/icons";
+import { Chip, Button, toast } from "@heroui/react";
+import { Briefcase, Clock, Globe, MapPin, TagDollar, OfficeBadge, Check, Star, Bookmark } from "@gravity-ui/icons";
 import Link from "next/link";
+import { toggleSaveJob } from "@/lib/api/saved-jobs";
 
-export default function JobCard({ job, hasApplied = false }) {
+export default function JobCard({ job, hasApplied = false, isSavedProp = false, onSaveToggle = () => {} }) {
   const [isOpen, setIsOpen] = useState(false);
+  const [isSaved, setIsSaved] = useState(isSavedProp);
+  const [isSaving, setIsSaving] = useState(false);
+  const { data: session } = useSession();
+
+  const handleSaveToggle = async (e) => {
+    e.stopPropagation();
+    if (!session?.user?.id) {
+       toast.error("Please log in to save jobs");
+       return;
+    }
+    if (isSaving) return;
+
+    setIsSaving(true);
+    const newStatus = !isSaved;
+    setIsSaved(newStatus);
+    onSaveToggle(job._id || job.id, newStatus);
+    
+    try {
+      await toggleSaveJob(session.user.id, job._id || job.id);
+      toast.success(newStatus ? "Job saved" : "Job removed from saved");
+    } catch(err) {
+      console.error(err);
+      setIsSaved(!newStatus);
+      onSaveToggle(job._id || job.id, !newStatus);
+      toast.error("Failed to save job");
+    } finally {
+      setIsSaving(false);
+    }
+  };
 
   // Helper to format tags string or array
   const formatList = (strOrArr) => {
@@ -79,11 +110,24 @@ export default function JobCard({ job, hasApplied = false }) {
           </div>
         </div>
 
-        {/* View Button */}
-        <div className="shrink-0 w-full sm:w-auto mt-2 sm:mt-0">
+        {/* View Button & Save Action */}
+        <div className="shrink-0 w-full sm:w-auto mt-2 sm:mt-0 flex items-center gap-2">
+          {session?.user?.role !== "recruiter" && session?.user?.role !== "admin" && (
+            <button
+              onClick={handleSaveToggle}
+              className={`flex h-10 w-10 items-center justify-center rounded-[10px] transition-all border ${
+                isSaved 
+                  ? "bg-[#0088FF]/10 border-[#0088FF]/30 text-[#0088FF] hover:bg-[#0088FF]/20" 
+                  : "bg-zinc-800/50 border-zinc-700/50 text-zinc-400 hover:text-white hover:bg-zinc-700"
+              }`}
+              title={isSaved ? "Remove from saved" : "Save job"}
+            >
+              <Bookmark size={18} className={isSaved ? "fill-current" : ""} />
+            </button>
+          )}
           <Button 
             onPress={() => setIsOpen(true)}
-            className="w-full sm:w-auto h-10 rounded-[10px] bg-zinc-800/50 hover:bg-zinc-700 border border-zinc-700/50 text-white font-semibold text-sm transition-all shadow-sm px-5 flex justify-center items-center gap-2"
+            className="flex-1 sm:flex-none h-10 rounded-[10px] bg-zinc-800/50 hover:bg-zinc-700 border border-zinc-700/50 text-white font-semibold text-sm transition-all shadow-sm px-5 flex justify-center items-center gap-2"
           >
             View <span className="text-lg leading-none mb-0.5">→</span>
           </Button>

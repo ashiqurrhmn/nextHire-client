@@ -15,7 +15,7 @@ import {
 import Link from "next/link";
 import { useSession } from "@/lib/auth-client";
 
-export default function Pricing() {
+export default function Pricing({ embedded = false }) {
   const { data: session } = useSession();
   const userRole = session?.user?.role; // "seeker" or "recruiter"
 
@@ -178,12 +178,13 @@ export default function Pricing() {
   const currentPlans = activeTab === "seekers" ? seekerPlans : recruiterPlans;
 
   return (
-    <section className="relative overflow-hidden pb-24 sm:py-32 px-4 sm:px-6 w-full bg-black">
+    <section className={`relative overflow-hidden ${embedded ? 'py-8' : 'pb-24 sm:py-32'} px-4 sm:px-6 w-full ${embedded ? 'bg-transparent' : 'bg-black'}`}>
       {/* Ambient background glows */}
       <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[500px] bg-[#0088FF]/[0.05] rounded-full blur-[150px] pointer-events-none" />
       <div className="absolute bottom-0 right-1/4 w-[600px] h-[400px] bg-purple-500/[0.05] rounded-full blur-[150px] pointer-events-none" />
 
       <div className="relative z-10 max-w-7xl mx-auto w-full">
+        {!embedded && (
         <div className="text-center mb-10 md:mb-14">
           <motion.h2
             initial={{ opacity: 0, y: 20 }}
@@ -207,6 +208,7 @@ export default function Pricing() {
             plans.
           </motion.p>
         </div>
+        )}
 
         {/* Custom Toggle Switch */}
         <div className="flex justify-center mb-16">

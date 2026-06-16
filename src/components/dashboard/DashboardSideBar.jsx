@@ -106,6 +106,15 @@ export function DashboardSideBar() {
   const userRole = user?.role || "seeker";
   const userName = user?.name || user?.email || "User";
   const userImage = user?.image;
+  const userPlan = user?.plan || "seeker_free";
+  const normalizedPlan = userPlan.toLowerCase();
+  const isPremium = normalizedPlan.includes("premium") || 
+                    normalizedPlan.includes("pro") || 
+                    normalizedPlan.includes("enterprise");
+  
+  let displayPlanName = "PREMIUM";
+  if (normalizedPlan.includes("pro")) displayPlanName = "PRO";
+  else if (normalizedPlan.includes("enterprise")) displayPlanName = "ENTERPRISE";
 
   const userInitials = userName
     ? userName
@@ -138,6 +147,7 @@ export function DashboardSideBar() {
         { icon: CompanyIcon, label: "My Company", href: "/dashboard/recruiter/company" },
         { icon: BriefcaseIcon, label: "Manage Jobs", href: "/dashboard/recruiter/jobs" },
         { icon: FileTextIcon, label: "Applications", href: "/dashboard/recruiter/applications" },
+        { icon: CreditCardIcon, label: "Billing", href: "/dashboard/recruiter/billing" },
         { icon: SettingsIcon, label: "Settings", href: "/dashboard/recruiter/settings" },
       ];
     }
@@ -228,11 +238,19 @@ export function DashboardSideBar() {
           </span>
         </div>
       </div>
-      <div className="inline-flex">
-        <span className="rounded-md border border-[#FF5E00]/30 bg-[#FF5E00]/5 px-2.5 py-0.5 text-[9px] font-bold tracking-wider text-[#FF5E00] uppercase">
-          PREMIUM ACCOUNT
-        </span>
-      </div>
+      {isPremium ? (
+        <div className="inline-flex">
+          <span className="rounded-md border border-[#FF5E00]/30 bg-[#FF5E00]/5 px-2.5 py-0.5 text-[9px] font-bold tracking-wider text-[#FF5E00] uppercase">
+            {displayPlanName} ACCOUNT
+          </span>
+        </div>
+      ) : (
+        <div className="inline-flex">
+          <span className="rounded-md border border-zinc-800 bg-zinc-900/50 px-2.5 py-0.5 text-[9px] font-bold tracking-wider text-zinc-400 uppercase">
+            FREE ACCOUNT
+          </span>
+        </div>
+      )}
     </div>
   );
 

@@ -21,26 +21,8 @@ export default function DashboardHeader() {
 
   return (
     <header className="flex flex-col sm:flex-row items-center justify-between gap-4 py-4 mb-6 border-b border-zinc-900">
-      {/* Search Input */}
-      <div className="relative w-full sm:max-w-md">
-        <span className="absolute inset-y-0 left-3 flex items-center pointer-events-none">
-          <svg
-            className="h-4 w-4 text-zinc-500"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-            strokeWidth="2"
-          >
-            <circle cx="11" cy="11" r="8" />
-            <line x1="21" y1="21" x2="16.65" y2="16.65" />
-          </svg>
-        </span>
-        <input
-          type="text"
-          placeholder="Search applications, jobs, or talent..."
-          className="w-full h-11 pl-10 pr-4 rounded-xl border border-zinc-900 bg-zinc-950/80 text-sm text-white placeholder-zinc-500 outline-none focus:border-[#0088FF]/50 transition-colors"
-        />
-      </div>
+      {/* Search Input Removed */}
+      <div className="flex-1"></div>
 
       {/* Actions */}
       <div className="flex items-center gap-4 ml-auto">
@@ -68,7 +50,7 @@ export default function DashboardHeader() {
             <div className="hidden sm:flex flex-col text-right">
               <span className="text-sm font-semibold text-white">{userName}</span>
               <span className="text-[10px] text-zinc-550 font-medium capitalize">
-                {userRole === "recruiter" ? "Recruiter" : "Job Seeker"}
+                {userRole === "admin" ? "Admin" : userRole === "recruiter" ? "Recruiter" : "Job Seeker"}
               </span>
             </div>
             {userImage ? (

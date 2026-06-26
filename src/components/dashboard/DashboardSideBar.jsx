@@ -261,7 +261,7 @@ export function DashboardSideBar() {
         <div className="flex flex-col gap-2">
           {/* Logo & Branding */}
           <Link href="/" className="flex items-center gap-2 outline-none px-1 py-2 mb-2 hover:opacity-80 transition-opacity cursor-pointer block">
-            <Image src="/assets/logo.png" alt="Logo" width={150} height={100} />
+            <Image src="/assets/logo.png" alt="Logo" width={150} height={100} style={{ width: "auto", height: "auto" }} />
           </Link>
 
           {/* Profile Header (Top) */}
@@ -306,7 +306,7 @@ export function DashboardSideBar() {
       {/* Mobile Sticky Header Bar */}
       <div className="lg:hidden flex items-center justify-between w-full border-b border-zinc-900 bg-zinc-950/80 backdrop-blur-md px-4 py-3 sticky top-0 z-40">
         <Link href="/" className="flex items-center gap-2">
-          <Image src="/assets/logo.png" alt="Logo" width={120} height={80} />
+          <Image src="/assets/logo.png" alt="Logo" width={120} height={80} style={{ width: "auto", height: "auto" }} />
         </Link>
 
         <Drawer>
@@ -327,7 +327,7 @@ export function DashboardSideBar() {
                 <Drawer.Header className="pt-2 pb-4 border-b border-zinc-900">
                   <Drawer.Heading className="text-lg font-bold text-white flex items-center gap-2">
                     <Link href="/" className="hover:opacity-80 transition-opacity cursor-pointer block">
-                      <Image src="/assets/logo.png" alt="Logo" width={120} height={80} />
+                      <Image src="/assets/logo.png" alt="Logo" width={120} height={80} style={{ width: "auto", height: "auto" }} />
                     </Link>
                   </Drawer.Heading>
                 </Drawer.Header>

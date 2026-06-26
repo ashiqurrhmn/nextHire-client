@@ -17,7 +17,7 @@ export default function DashboardHeader() {
         .join("")
         .toUpperCase()
         .slice(0, 2)
-    : "NH";
+    : "NH"; 
 
   return (
     <header className="flex flex-col sm:flex-row items-center justify-between gap-4 py-4 mb-6 border-b border-zinc-900">

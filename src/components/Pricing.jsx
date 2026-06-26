@@ -242,7 +242,7 @@ export default function Pricing({ embedded = false }) {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8 md:gap-6 lg:gap-8 items-stretch max-w-6xl mx-auto mb-24">
-          <AnimatePresence mode="wait">
+          <AnimatePresence>
             {currentPlans.map((plan, index) => (
               <motion.div
                 key={activeTab + plan.name}

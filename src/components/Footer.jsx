@@ -22,6 +22,7 @@ export default function Footer() {
                 width={160}
                 height={40}
                 className="h-14 w-auto object-contain transition-transform duration-300 hover:scale-[1.02]"
+                style={{ width: "auto", height: "auto" }}
               />
             </Link>
             <p className="text-zinc-400 text-[14px] leading-relaxed max-w-sm">

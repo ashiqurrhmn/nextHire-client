@@ -34,123 +34,58 @@ export default function Pricing({ embedded = false }) {
     (activeTab === "recruiters" && userRole !== "recruiter")
   );
 
-  const seekerPlans = [
-    {
-      name: "Free",
-      id: "seeker_free",
-      price: "$0",
-      period: "/forever",
-      description: "Perfect for casual job seekers just starting their search.",
-      icon: <Star size={24} className="text-zinc-400" />,
-      features: [
-        "Browse & save up to 10 jobs",
-        "Apply to up to 3 jobs per month",
-        "Basic profile",
-        "Email alerts",
-      ],
-      buttonText: "Current Plan",
-      buttonVariant: "bordered",
-      popular: false,
-    },
-    {
-      name: "Pro",
-      id: "seeker_pro",
-      price: "$19",
-      period: "/month",
-      description: "Ideal for active seekers who want more opportunities.",
-      icon: <ShieldCheck size={24} className="text-[#0088FF]" />,
-      features: [
-        "Apply to up to 30 jobs per month",
-        "Unlimited saved jobs",
-        "Application tracking",
-        "Salary insights",
-      ],
-      buttonText: "Upgrade to Pro",
-      buttonVariant: "solid",
-      popular: true,
-      gradient: "from-[#0088FF] to-[#0055FF]",
-      stripePriceId: "price_1TiKAB3pA2swKjtHCOXIL4bn",
-    },
-    {
-      name: "Premium",
-      id: "seeker_premium",
-      price: "$39",
-      period: "/month",
-      description: "The ultimate toolkit for serious professionals.",
-      icon: <Diamond size={24} className="text-purple-400" />,
-      features: [
-        "Everything in Pro",
-        "Unlimited applications",
-        "Profile boost to recruiters",
-        "Early access to new jobs",
-        "Priority support",
-      ],
-      buttonText: "Upgrade to Premium",
-      buttonVariant: "solid",
-      popular: false,
-      gradient: "from-purple-500 to-indigo-600",
-      stripePriceId: "price_1TiKAB3pA2swKjtHCOXIL4bn",
-    },
-  ];
+  const [dbPlans, setDbPlans] = useState({ seeker: [], recruiter: [] });
+  const [loading, setLoading] = useState(true);
 
-  const recruiterPlans = [
-    {
-      name: "Free",
-      id: "recruiter_free",
-      price: "$0",
-      period: "/forever",
-      description: "Great for a company's first year of hiring.",
-      icon: <Star size={24} className="text-zinc-400" />,
-      features: [
-        "Up to 3 active job posts",
-        "Basic applicant management",
-        "Standard listing visibility",
-      ],
-      buttonText: "Current Plan",
-      buttonVariant: "bordered",
-      popular: false,
-    },
-    {
-      name: "Growth",
-      id: "recruiter_growth",
-      price: "$49",
-      period: "/month",
-      description: "For growing teams that need to hire fast.",
-      icon: <ShieldCheck size={24} className="text-[#0088FF]" />,
-      features: [
-        "Up to 10 active job posts",
-        "Applicant tracking",
-        "Basic analytics",
-        "Email support",
-      ],
-      buttonText: "Upgrade to Growth",
-      buttonVariant: "solid",
-      popular: true,
-      gradient: "from-[#0088FF] to-[#0055FF]",
-      stripePriceId: "price_1TiKAB3pA2swKjtHCOXIL4bn",
-    },
-    {
-      name: "Enterprise",
-      id: "recruiter_enterprise",
-      price: "$149",
-      period: "/month",
-      description: "For scaling companies with advanced needs.",
-      icon: <Diamond size={24} className="text-purple-400" />,
-      features: [
-        "Up to 50 active job posts",
-        "Advanced analytics dashboard",
-        "Featured job listings",
-        "Team collaboration",
-        "Custom branding",
-        "Priority support",
-      ],
-      buttonText: "Upgrade to Enterprise",
-      buttonVariant: "solid",
-      popular: false,
-      gradient: "from-purple-500 to-indigo-600",
-      stripePriceId: "price_1TiKAB3pA2swKjtHCOXIL4bn",
-    },
-  ];
+  useEffect(() => {
+    fetch(`${process.env.NEXT_PUBLIC_BASE_URL || ""}/api/plans`)
+      .then((res) => res.json())
+      .then((data) => {
+        const seeker = data.filter((p) => p.role === "seeker");
+        const recruiter = data.filter((p) => p.role === "recruiter");
+        setDbPlans({ seeker, recruiter });
+        setLoading(false);
+      })
+      .catch((err) => {
+        console.error("Failed to fetch plans", err);
+        setLoading(false);
+      });
+  }, []);
+
+  const getPlanDetails = (plan) => {
+    // Add UI specific properties that are not in DB
+    const isFree = plan.price === "$0" || plan.price === 0;
+    
+    let icon, buttonVariant, gradient, buttonText;
+    
+    if (plan.name === "Free") {
+      icon = <Star size={24} className="text-zinc-400" />;
+      buttonVariant = "bordered";
+      buttonText = "Current Plan";
+    } else if (plan.name === "Pro" || plan.name === "Growth") {
+      icon = <ShieldCheck size={24} className="text-[#0088FF]" />;
+      buttonVariant = "solid";
+      buttonText = `Upgrade to ${plan.name}`;
+      gradient = "from-[#0088FF] to-[#0055FF]";
+    } else if (plan.name === "Premium" || plan.name === "Enterprise") {
+      icon = <Diamond size={24} className="text-purple-400" />;
+      buttonVariant = "solid";
+      buttonText = `Upgrade to ${plan.name}`;
+      gradient = "from-purple-500 to-indigo-600";
+    }
+
+    return {
+      ...plan,
+      icon,
+      buttonVariant,
+      buttonText,
+      gradient
+    };
+  };
+
+  const seekerPlans = dbPlans.seeker.map(getPlanDetails);
+  const recruiterPlans = dbPlans.recruiter.map(getPlanDetails);
+
 
   const faqs = [
     {
@@ -242,6 +177,11 @@ export default function Pricing({ embedded = false }) {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8 md:gap-6 lg:gap-8 items-stretch max-w-6xl mx-auto mb-24">
+          {loading ? (
+             <div className="col-span-1 md:col-span-3 flex justify-center py-20">
+                <div className="w-10 h-10 border-4 border-[#0088FF] border-t-transparent rounded-full animate-spin"></div>
+             </div>
+          ) : (
           <AnimatePresence>
             {currentPlans.map((plan, index) => (
               <motion.div
@@ -329,6 +269,7 @@ export default function Pricing({ embedded = false }) {
               </motion.div>
             ))}
           </AnimatePresence>
+          )}
         </div>
 
         {/* FAQ Section */}

@@ -110,10 +110,12 @@ export function DashboardSideBar() {
   const normalizedPlan = userPlan.toLowerCase();
   const isPremium = normalizedPlan.includes("premium") || 
                     normalizedPlan.includes("pro") || 
+                    normalizedPlan.includes("growth") ||
                     normalizedPlan.includes("enterprise");
   
   let displayPlanName = "PREMIUM";
   if (normalizedPlan.includes("pro")) displayPlanName = "PRO";
+  else if (normalizedPlan.includes("growth")) displayPlanName = "GROWTH";
   else if (normalizedPlan.includes("enterprise")) displayPlanName = "ENTERPRISE";
 
   const userInitials = userName

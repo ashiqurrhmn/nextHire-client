@@ -54,10 +54,11 @@ const RecruiterJobsPage = ({ company, initialJobs }) => {
   // Fetch jobs on load / company change
   useEffect(() => {
     const fetchJobs = async () => {
-      if (!company?._id) return;
+      const companyId = company?.id || company?._id;
+      if (!companyId) return;
       try {
         setLoading(true);
-        const data = await getCompanyJobs(company?.id);
+        const data = await getCompanyJobs(companyId);
         if (data && Array.isArray(data)) {
           setJobs(data);
         } else if (data && data.error) {
@@ -75,76 +76,128 @@ const RecruiterJobsPage = ({ company, initialJobs }) => {
     };
 
     fetchJobs();
-  }, [company?.id]);
+  }, [company?._id, company?.id]);
 
   // Handlers for action column
   const handleDeleteJob = async (jobId) => {
-    setJobs((prevJobs) => prevJobs.filter((job) => job._id !== jobId));
-    toast.success("Job listing deleted successfully!");
+    const prevJobs = jobs;
+    setJobs((prev) => prev.filter((job) => (job._id || job.id) !== jobId));
 
     try {
       const baseUrl = process.env.NEXT_PUBLIC_BASE_URL;
-      await fetch(`${baseUrl}/api/jobs/${jobId}`, {
+      const response = await fetch(`${baseUrl}/api/jobs/${jobId}`, {
         method: "DELETE",
       });
+      const data = await response.json();
+      if (!response.ok || !data.success) {
+        throw new Error(data.error || "Failed to delete job");
+      }
+      toast.success("Job listing deleted successfully!");
     } catch (err) {
-      console.warn("Failed to sync delete with backend API (expected in development):", err);
+      console.error("Failed to delete job:", err);
+      setJobs(prevJobs);
+      toast.error("Failed to delete job. Please try again.");
     }
   };
 
   const handleToggleStatus = async (jobId, currentStatus) => {
     const newStatus = currentStatus === "active" ? "closed" : "active";
+    
+    // Optimistically update UI
     setJobs((prevJobs) =>
       prevJobs.map((job) =>
-        job._id === jobId ? { ...job, status: newStatus } : job
+        (job._id || job.id) === jobId ? { ...job, status: newStatus } : job
       )
     );
-    toast.success(`Job status changed to ${newStatus}!`);
 
     try {
       const baseUrl = process.env.NEXT_PUBLIC_BASE_URL;
-      await fetch(`${baseUrl}/api/jobs/${jobId}/status`, {
+      const response = await fetch(`${baseUrl}/api/jobs/${jobId}/status`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ status: newStatus }),
       });
+      
+      const data = await response.json();
+      
+      if (!response.ok || !data.success) {
+        throw new Error(data.error || "Failed to update status");
+      }
+      
+      toast.success(`Job status changed to ${newStatus}!`);
     } catch (err) {
-      console.warn("Failed to sync status update with backend API (expected in development):", err);
+      console.error("Failed to update job status:", err);
+      // Revert the optimistic update
+      setJobs((prevJobs) =>
+        prevJobs.map((job) =>
+          (job._id || job.id) === jobId ? { ...job, status: currentStatus } : job
+        )
+      );
+      toast.error("Failed to update job status. Please try again.");
     }
   };
 
-  const handleDuplicateJob = (job) => {
+  const handleDuplicateJob = async (job) => {
     const title = job.jobTitle || job.title || "Untitled Job";
     const duplicated = {
       ...job,
-      _id: `job_${Date.now()}`,
+      _id: `job_${Date.now()}`, // Temporary ID for optimistic UI
       jobTitle: `${title} (Copy)`,
       applicantsCount: 0,
-      createdAt: new Date().toISOString().split("T")[0],
+      createdAt: new Date().toISOString(),
       status: "draft",
     };
+    
+    // Remove the original ID so the backend creates a new one
+    delete duplicated.id;
+    delete duplicated._id;
+
+    const prevJobs = jobs;
     setJobs((prevJobs) => [duplicated, ...prevJobs]);
-    toast.success(`Duplicated "${title}" as a Draft!`);
+
+    try {
+      const baseUrl = process.env.NEXT_PUBLIC_BASE_URL;
+      const response = await fetch(`${baseUrl}/api/jobs`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(duplicated),
+      });
+      const data = await response.json();
+      if (!response.ok || data.error) {
+        throw new Error(data.error || "Failed to duplicate job");
+      }
+      
+      // Update the temporary ID with the real one from the server
+      if (data.insertedId) {
+        setJobs((prev) => prev.map((j) => j === duplicated ? { ...j, _id: data.insertedId } : j));
+      }
+      
+      toast.success(`Duplicated "${title}" as a Draft!`);
+    } catch (err) {
+      console.error("Failed to duplicate job:", err);
+      setJobs(prevJobs);
+      toast.error("Failed to duplicate job. Please try again.");
+    }
   };
 
   const handleAction = (key, job) => {
     const title = job.jobTitle || job.title || "Untitled Job";
     switch (key) {
       case "view_apps":
-        router.push(`/dashboard/recruiter/applications?jobId=${job._id}`);
+        router.push(`/dashboard/recruiter/applications?jobId=${job._id || job.id}`);
         break;
       case "edit":
-        toast.error(`Editing details for "${title}" is disabled in demo mode.`);
+        router.push(`/dashboard/recruiter/jobs/edit/${job._id || job.id}`);
         break;
       case "toggle_status":
-        handleToggleStatus(job._id, job.status);
+        handleToggleStatus(job._id || job.id, job.status);
         break;
       case "duplicate":
         handleDuplicateJob(job);
         break;
       case "delete":
         if (confirm(`Are you sure you want to delete the job posting for "${title}"?`)) {
-          handleDeleteJob(job._id);
+          handleDeleteJob(job._id || job.id);
         }
         break;
       default:
@@ -617,24 +670,17 @@ const RecruiterJobsPage = ({ company, initialJobs }) => {
                                     <span>Edit Details</span>
                                   </div>
                                 </DropdownItem>
-                                <DropdownItem
-                                  key="toggle_status"
-                                  className="flex cursor-pointer items-center rounded-lg p-2 text-sm text-zinc-300 hover:bg-zinc-900 outline-none data-[focused=true]:bg-zinc-900"
-                                >
-                                  <div className="flex items-center gap-2">
-                                    <Clock size={14} />
-                                    <span>{job.status === "active" ? "Close Opening" : "Activate Listing"}</span>
-                                  </div>
-                                </DropdownItem>
-                                <DropdownItem
-                                  key="duplicate"
-                                  className="flex cursor-pointer items-center rounded-lg p-2 text-sm text-zinc-300 hover:bg-zinc-900 outline-none data-[focused=true]:bg-zinc-900"
-                                >
-                                  <div className="flex items-center gap-2">
-                                    <Plus size={14} />
-                                    <span>Duplicate Post</span>
-                                  </div>
-                                </DropdownItem>
+                                {job.status !== "closed" && (
+                                  <DropdownItem
+                                    key="toggle_status"
+                                    className="flex cursor-pointer items-center rounded-lg p-2 text-sm text-zinc-300 hover:bg-zinc-900 outline-none data-[focused=true]:bg-zinc-900"
+                                  >
+                                    <div className="flex items-center gap-2">
+                                      <Clock size={14} />
+                                      <span>{job.status === "active" ? "Close Opening" : "Activate Listing"}</span>
+                                    </div>
+                                  </DropdownItem>
+                                )}
                                 <DropdownItem
                                   key="delete"
                                   className="flex cursor-pointer items-center rounded-lg p-2 text-sm text-red-400 hover:bg-red-950/20 hover:text-red-350 outline-none border-t border-zinc-900 data-[focused=true]:bg-red-950/25"

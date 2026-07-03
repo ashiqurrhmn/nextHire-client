@@ -94,6 +94,7 @@ export default function JobDetailsClient({ job, initialHasApplied = false, total
   return (
     <div className="bg-black min-h-screen pt-10 pb-12 px-4 sm:px-6 lg:px-8">
       <div className="relative z-10 max-w-4xl mx-auto">
+        {(!session?.user || session?.user?.role === "seeker") && (
         <motion.div
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
@@ -135,6 +136,7 @@ export default function JobDetailsClient({ job, initialHasApplied = false, total
             )}
           </div>
         </motion.div>
+        )}
 
         <motion.div
           initial={{ opacity: 0, x: -20 }}
@@ -182,13 +184,19 @@ export default function JobDetailsClient({ job, initialHasApplied = false, total
               </div>
             </div>
 
-            <Button
-              onPress={handleApplyClick}
-              isDisabled={hasApplied}
-              className={`w-full md:w-auto h-11 px-6 rounded-xl font-bold text-sm shadow-[0_6px_20px_rgba(0,136,255,0.3)] transition-all shrink-0 data-[disabled=true]:opacity-50 text-white ${!isUnlimited && totalApplicationsCount >= planLimit && !hasApplied ? 'bg-gradient-to-r from-purple-500 to-indigo-600 hover:from-purple-400 hover:to-indigo-500 shadow-[0_6px_20px_rgba(168,85,247,0.3)]' : 'bg-gradient-to-r from-[#0088FF] to-[#0055FF] hover:from-[#339FFF] hover:to-[#2277FF]'}`}
-            >
-              {hasApplied ? "Applied" : (!isUnlimited && totalApplicationsCount >= planLimit) ? "Upgrade to Apply" : "Apply Now"}
-            </Button>
+            {session?.user?.role === "recruiter" ? (
+              <div className="text-sm font-medium text-red-400 bg-red-400/10 border border-red-400/20 px-4 py-2.5 rounded-xl text-center md:text-left shrink-0">
+                Recruiters cannot apply for jobs.
+              </div>
+            ) : (
+              <Button
+                onPress={handleApplyClick}
+                isDisabled={hasApplied}
+                className={`w-full md:w-auto h-11 px-6 rounded-xl font-bold text-sm shadow-[0_6px_20px_rgba(0,136,255,0.3)] transition-all shrink-0 data-[disabled=true]:opacity-50 text-white ${!isUnlimited && totalApplicationsCount >= planLimit && !hasApplied ? 'bg-gradient-to-r from-purple-500 to-indigo-600 hover:from-purple-400 hover:to-indigo-500 shadow-[0_6px_20px_rgba(168,85,247,0.3)]' : 'bg-gradient-to-r from-[#0088FF] to-[#0055FF] hover:from-[#339FFF] hover:to-[#2277FF]'}`}
+              >
+                {hasApplied ? "Applied" : (!isUnlimited && totalApplicationsCount >= planLimit) ? "Upgrade to Apply" : "Apply Now"}
+              </Button>
+            )}
           </div>
 
           <div className="relative z-10 flex flex-wrap gap-2 mt-6 pt-6 border-t border-zinc-800/60">

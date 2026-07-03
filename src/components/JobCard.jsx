@@ -258,8 +258,12 @@ export default function JobCard({ job, hasApplied = false, isSavedProp = false, 
                   <div className="h-12 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 font-bold px-10 text-base flex justify-center items-center gap-2 cursor-default">
                     <Check size={16} /> Applied
                   </div>
+                ) : session?.user?.role === "recruiter" ? (
+                  <div className="h-12 rounded-xl bg-red-400/10 border border-red-400/20 text-red-400 font-bold px-6 sm:px-10 text-sm sm:text-base flex justify-center items-center cursor-not-allowed text-center">
+                    Recruiters cannot apply
+                  </div>
                 ) : (
-                  <Link href={`/browse-jobs/${job._id}`} className="h-12 rounded-xl bg-gradient-to-r from-[#0088FF] to-[#0055FF] hover:from-[#339FFF] hover:to-[#2277FF] text-white font-bold px-10 shadow-[0_4px_14px_rgba(0,136,255,0.3)] text-base flex justify-center items-center">
+                  <Link href={`/browse-jobs/${job._id || job.id}`} className="h-12 rounded-xl bg-gradient-to-r from-[#0088FF] to-[#0055FF] hover:from-[#339FFF] hover:to-[#2277FF] text-white font-bold px-10 shadow-[0_4px_14px_rgba(0,136,255,0.3)] text-base flex justify-center items-center">
                     Apply for this job
                   </Link>
                 )}

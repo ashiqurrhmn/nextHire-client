@@ -41,9 +41,13 @@ export default function Pricing({ embedded = false }) {
     fetch(`${process.env.NEXT_PUBLIC_BASE_URL || ""}/api/plans`)
       .then((res) => res.json())
       .then((data) => {
-        const seeker = data.filter((p) => p.role === "seeker");
-        const recruiter = data.filter((p) => p.role === "recruiter");
-        setDbPlans({ seeker, recruiter });
+        if (Array.isArray(data)) {
+          const seeker = data.filter((p) => p.role === "seeker");
+          const recruiter = data.filter((p) => p.role === "recruiter");
+          setDbPlans({ seeker, recruiter });
+        } else {
+          console.error("API returned non-array data:", data);
+        }
         setLoading(false);
       })
       .catch((err) => {

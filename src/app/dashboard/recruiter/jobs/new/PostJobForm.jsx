@@ -29,7 +29,7 @@ import {
   Sparkles,
   TagDollar,
 } from "@gravity-ui/icons";
-import { createJob } from "@/lib/actions/jobs";
+import { createJob, updateJob } from "@/lib/actions/jobs";
 
 const categories = [
   { id: "technology", label: "Technology" },
@@ -73,16 +73,11 @@ function SectionHeading({ icon: Icon, title, subtitle }) {
   );
 }
 
-export default function PostJobForm({company}) {
+export default function PostJobForm({company, existingJob = null}) {
   const router = useRouter();
+  const isEditMode = !!existingJob;
 
-  // const [company] = useState({
-  //   name: "Acme Corp",
-  //   id: "company_123",
-  //   isApproved: true,
-  // });
-
-  const [isRemote, setIsRemote] = useState(false);
+  const [isRemote, setIsRemote] = useState(existingJob?.isRemote || false);
   const [errors, setErrors] = useState({});
 
   const handleSubmit = async (e) => {
@@ -186,24 +181,33 @@ export default function PostJobForm({company}) {
     const payload = {
       ...data,
       isRemote,
-      companyId: company.id,
+      companyId: company.id || company._id,
       companyName: company.name,
       companyLogo: company.logoUrl || company.logoBg || "",
-      status: "active",
+      status: existingJob?.status || "active",
       isPubliclyVisible: true,
     };
 
-    const res = await createJob(payload);
-    if (res?.error) {
-      toast.error(res.error);
-      return;
-    }
-
-    if (res?.insertedId) {
-      toast.success("Job posted successfully!");
-      form.reset();
-      setIsRemote(false);
+    if (isEditMode) {
+      const res = await updateJob(existingJob._id, payload);
+      if (res?.error) {
+        toast.error(res.error);
+        return;
+      }
+      toast.success("Job updated successfully!");
       router.push("/dashboard/recruiter/jobs");
+    } else {
+      const res = await createJob(payload);
+      if (res?.error) {
+        toast.error(res.error);
+        return;
+      }
+      if (res?.insertedId) {
+        toast.success("Job posted successfully!");
+        form.reset();
+        setIsRemote(false);
+        router.push("/dashboard/recruiter/jobs");
+      }
     }
   };
 
@@ -241,7 +245,7 @@ export default function PostJobForm({company}) {
               New opening
             </div>
             <h1 className="text-2xl font-bold tracking-tight text-white sm:text-3xl">
-              Post a New Job
+              {isEditMode ? "Edit Job Details" : "Post a New Job"}
             </h1>
               <p className="mt-2 max-w-2xl text-sm leading-6 text-zinc-400">
               Create a polished public listing with role details, compensation,
@@ -296,6 +300,7 @@ export default function PostJobForm({company}) {
               <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
                 <TextField
                   name="jobTitle"
+                  defaultValue={existingJob?.jobTitle || ""}
                   isInvalid={!!errors.jobTitle}
                   className="flex w-full flex-col gap-2"
                 >
@@ -306,7 +311,7 @@ export default function PostJobForm({company}) {
                   )}
                 </TextField>
 
-                <Select name="jobCategory" isInvalid={!!errors.jobCategory} className="w-full">
+                <Select name="jobCategory" defaultSelectedKeys={existingJob?.jobCategory ? [existingJob.jobCategory] : []} isInvalid={!!errors.jobCategory} className="w-full">
                   <Label className={`${labelClass} mb-2 block`}>Job Category</Label>
                   <Select.Trigger className={triggerClasses}>
                     <Select.Value className="text-white" />
@@ -333,7 +338,7 @@ export default function PostJobForm({company}) {
               </div>
 
               <div className="grid grid-cols-1 gap-5 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.4fr)]">
-                <Select name="jobType" isInvalid={!!errors.jobType} className="w-full">
+                <Select name="jobType" defaultSelectedKeys={existingJob?.jobType ? [existingJob.jobType] : []} isInvalid={!!errors.jobType} className="w-full">
                   <Label className={`${labelClass} mb-2 block`}>Job Type</Label>
                   <Select.Trigger className={triggerClasses}>
                     <Select.Value />
@@ -359,7 +364,7 @@ export default function PostJobForm({company}) {
                 </Select>
 
                 <div className="grid grid-cols-1 gap-3 sm:grid-cols-[1fr_1fr_120px]">
-                  <TextField name="minSalary" isInvalid={!!errors.minSalary} className="flex flex-col gap-2">
+                  <TextField name="minSalary" defaultValue={existingJob?.minSalary || ""} isInvalid={!!errors.minSalary} className="flex flex-col gap-2">
                     <Label className={labelClass}>Min Salary</Label>
                     <Input placeholder="60000" type="number" className={getInputClass(!!errors.minSalary)} />
                     {errors.minSalary && (
@@ -367,7 +372,7 @@ export default function PostJobForm({company}) {
                     )}
                   </TextField>
 
-                  <TextField name="maxSalary" isInvalid={!!errors.maxSalary} className="flex flex-col gap-2">
+                  <TextField name="maxSalary" defaultValue={existingJob?.maxSalary || ""} isInvalid={!!errors.maxSalary} className="flex flex-col gap-2">
                     <Label className={labelClass}>Max Salary</Label>
                     <Input placeholder="95000" type="number" className={getInputClass(!!errors.maxSalary)} />
                     {errors.maxSalary && (
@@ -375,7 +380,7 @@ export default function PostJobForm({company}) {
                     )}
                   </TextField>
 
-                  <Select name="currency" defaultSelectedKeys={["USD"]} className="w-full">
+                  <Select name="currency" defaultSelectedKeys={[existingJob?.currency || "USD"]} className="w-full">
                     <Label className={`${labelClass} mb-2 block`}>Currency</Label>
                     <Select.Trigger className={triggerClasses}>
                       <Select.Value />
@@ -425,6 +430,7 @@ export default function PostJobForm({company}) {
 
                   <TextField
                     name="location"
+                    defaultValue={existingJob?.location || ""}
                     isInvalid={!isRemote && !!errors.location}
                     className="flex w-full flex-col gap-2"
                   >
@@ -450,6 +456,7 @@ export default function PostJobForm({company}) {
 
                 <TextField
                   name="deadline"
+                  defaultValue={existingJob?.deadline || ""}
                   isInvalid={!!errors.deadline}
                   className="flex w-full flex-col gap-2"
                 >
@@ -479,6 +486,7 @@ export default function PostJobForm({company}) {
 
               <TextField
                 name="responsibilities"
+                defaultValue={existingJob?.responsibilities || ""}
                 isInvalid={!!errors.responsibilities}
                 className="flex w-full flex-col gap-2"
               >
@@ -495,6 +503,7 @@ export default function PostJobForm({company}) {
 
               <TextField
                 name="requirements"
+                defaultValue={existingJob?.requirements || ""}
                 isInvalid={!!errors.requirements}
                 className="flex w-full flex-col gap-2"
               >
@@ -509,7 +518,7 @@ export default function PostJobForm({company}) {
                 )}
               </TextField>
 
-              <TextField name="benefits" className="flex w-full flex-col gap-2">
+              <TextField name="benefits" defaultValue={existingJob?.benefits || ""} className="flex w-full flex-col gap-2">
                 <Label className={labelClass}>Benefits</Label>
                 <TextArea
                   placeholder="Healthcare, equity, learning budget, remote stipend..."
@@ -534,7 +543,7 @@ export default function PostJobForm({company}) {
                 type="submit"
                 className="h-11 rounded-xl bg-gradient-to-r from-[#0088FF] to-[#0055FF] px-6 text-sm font-bold text-white shadow-lg shadow-[#0088FF]/20 transition-all hover:from-[#339FFF] hover:to-[#2277FF]"
               >
-                Post Job
+                {isEditMode ? "Save Changes" : "Post Job"}
               </Button>
             </div>
           </div>

@@ -278,11 +278,11 @@ export default function ApplicationsClient({ applications }) {
           <table className="w-full text-left text-sm text-zinc-400 border-collapse min-w-[800px]">
             <thead>
               <tr className="border-b border-zinc-900 text-zinc-500 font-semibold text-xs uppercase tracking-wider">
-                <th className="pb-3 font-semibold text-left">Job Title</th>
-                <th className="pb-3 font-semibold text-left">Company</th>
-                <th className="pb-3 font-semibold text-left">Applied</th>
-                <th className="pb-3 font-semibold text-left">Status</th>
-                <th className="pb-3 font-semibold text-right">Action</th>
+                <th className="pb-3 pr-6 font-semibold text-left">Job Title</th>
+                <th className="pb-3 px-6 font-semibold text-left">Company</th>
+                <th className="pb-3 px-6 font-semibold text-left">Applied</th>
+                <th className="pb-3 px-6 font-semibold text-left">Status</th>
+                <th className="pb-3 px-6 font-semibold text-right">Action</th>
               </tr>
             </thead>
             <tbody>

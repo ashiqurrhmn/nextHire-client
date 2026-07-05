@@ -23,8 +23,8 @@ export default function AdminJobsPage({ initialJobs }) {
   const [deletingId, setDeletingId] = useState(null);
 
   // Load More
-  const [visibleCount, setVisibleCount] = useState(8);
-  const itemsPerPage = 8;
+  const [visibleCount, setVisibleCount] = useState(10);
+  const itemsPerPage = 10;
 
   const filteredJobs = useMemo(() => {
     return jobs.filter((job) => {

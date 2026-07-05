@@ -68,7 +68,7 @@ export default function BrowseJobsPage() {
   const [appliedJobIds, setAppliedJobIds] = useState([]);
   const [savedJobIds, setSavedJobIds] = useState([]);
   const { data: session } = useSession();
-  const jobsPerPage = 9;
+  const jobsPerPage = 10;
 
   const uniqueCategories = useMemo(() => {
     const ObjectCategories = new Set(jobs.map(job => job.category));

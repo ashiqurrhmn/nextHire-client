@@ -1,10 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { motion } from "framer-motion";
 import Link from "next/link";
 import { Button } from "@heroui/react";
-import { Briefcase } from "@gravity-ui/icons";
+import { Briefcase, Magnifier } from "@gravity-ui/icons";
+import DashboardHeader from "@/components/dashboard/DashboardHeader";
 
 const STATUS_CONFIG = {
   Applied: { color: "text-zinc-300", border: "border-zinc-500" },
@@ -18,7 +19,18 @@ const STATUS_KEYS = Object.keys(STATUS_CONFIG);
 
 export default function ApplicationsClient({ applications }) {
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 5;
+  const itemsPerPage = 10;
+  
+  // Filter & Sort states
+  const [searchQuery, setSearchQuery] = useState("");
+  const [statusFilter, setStatusFilter] = useState("all");
+  const [sortBy, setSortBy] = useState("createdAt");
+  const [sortOrder, setSortOrder] = useState("desc");
+
+  // Reset page when filters change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchQuery, statusFilter, sortBy, sortOrder]);
 
   if (!applications || applications.length === 0) {
     return (
@@ -58,6 +70,47 @@ export default function ApplicationsClient({ applications }) {
     ? Math.round((enrichedApps.filter(a => a.uiStatus === 'Offered').length / totalApplied) * 100) 
     : 0;
 
+  // Filter and Sort logic
+  const filteredApplications = useMemo(() => {
+    let result = [...enrichedApps];
+
+    // Filter by search query (job title or company name)
+    if (searchQuery.trim()) {
+      const q = searchQuery.toLowerCase();
+      result = result.filter(
+        (app) =>
+          (app.jobTitle && app.jobTitle.toLowerCase().includes(q)) ||
+          (app.companyName && app.companyName.toLowerCase().includes(q))
+      );
+    }
+
+    // Filter by status
+    if (statusFilter !== "all") {
+      result = result.filter((app) => app.uiStatus === statusFilter);
+    }
+
+    // Sort
+    result.sort((a, b) => {
+      let valA, valB;
+      if (sortBy === "createdAt") {
+        valA = new Date(a.createdAt || 0).getTime();
+        valB = new Date(b.createdAt || 0).getTime();
+      } else if (sortBy === "jobTitle") {
+        valA = (a.jobTitle || "").toLowerCase();
+        valB = (b.jobTitle || "").toLowerCase();
+      } else if (sortBy === "companyName") {
+        valA = (a.companyName || "").toLowerCase();
+        valB = (b.companyName || "").toLowerCase();
+      }
+
+      if (valA < valB) return sortOrder === "asc" ? -1 : 1;
+      if (valA > valB) return sortOrder === "asc" ? 1 : -1;
+      return 0;
+    });
+
+    return result;
+  }, [enrichedApps, searchQuery, statusFilter, sortBy, sortOrder]);
+
   const formatDateString = (dateStr) => {
     if (!dateStr) return "Unknown";
     const date = new Date(dateStr);
@@ -80,11 +133,11 @@ export default function ApplicationsClient({ applications }) {
   };
 
   // Pagination logic
-  const totalPages = Math.max(1, Math.ceil(enrichedApps.length / itemsPerPage));
+  const totalPages = Math.max(1, Math.ceil(filteredApplications.length / itemsPerPage));
   const safeCurrentPage = Math.min(currentPage, totalPages);
   const startIndex = (safeCurrentPage - 1) * itemsPerPage;
-  const endIndex = Math.min(startIndex + itemsPerPage, enrichedApps.length);
-  const currentApps = enrichedApps.slice(startIndex, endIndex);
+  const endIndex = Math.min(startIndex + itemsPerPage, filteredApplications.length);
+  const currentApps = filteredApplications.slice(startIndex, endIndex);
 
   const handlePrevPage = () => {
     if (safeCurrentPage > 1) setCurrentPage(safeCurrentPage - 1);
@@ -96,6 +149,8 @@ export default function ApplicationsClient({ applications }) {
 
   return (
     <div className="w-full">
+      <DashboardHeader />
+      
       {/* Header Area */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-end mb-8 gap-4">
         <div>
@@ -112,48 +167,122 @@ export default function ApplicationsClient({ applications }) {
               Archived
             </button>
           </div>
-          <button className="flex items-center gap-2 px-4 py-2 bg-white text-black text-sm font-semibold rounded-lg hover:bg-zinc-200 transition-colors">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-              <polyline points="7 10 12 15 17 10"></polyline>
-              <line x1="12" y1="15" x2="12" y2="3"></line>
-            </svg>
-            Export PDF
-          </button>
         </div>
       </div>
 
       {/* Stats Grid */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-        <div className="bg-[#1c1c21] border border-zinc-800 rounded-xl p-5 flex flex-col justify-center">
-          <p className="text-zinc-400 text-sm font-medium mb-1">Total Applied</p>
-          <p className="text-2xl font-bold text-white">{totalApplied}</p>
+        <div className="flex flex-col justify-between p-5 rounded-2xl border border-zinc-900 bg-zinc-950/40 hover:bg-zinc-950/60 transition-colors text-left">
+          <div className="flex items-center justify-between mb-4 w-full">
+            <span className="text-xs font-semibold text-zinc-500 uppercase tracking-wider">Total Applied</span>
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg border border-zinc-800 text-zinc-400">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+            </div>
+          </div>
+          <span className="text-3xl font-bold text-white tracking-tight">{totalApplied}</span>
         </div>
-        <div className="bg-[#1c1c21] border border-zinc-800 rounded-xl p-5 flex flex-col justify-center">
-          <p className="text-zinc-400 text-sm font-medium mb-1">Shortlisted</p>
-          <p className="text-2xl font-bold text-white">{shortlistedCount}</p>
+
+        <div className="flex flex-col justify-between p-5 rounded-2xl border border-zinc-900 bg-zinc-950/40 hover:bg-zinc-950/60 transition-colors text-left">
+          <div className="flex items-center justify-between mb-4 w-full">
+            <span className="text-xs font-semibold text-zinc-500 uppercase tracking-wider">Shortlisted</span>
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg border border-emerald-950/50 bg-emerald-950/10 text-emerald-450">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-emerald-500"><polyline points="20 6 9 17 4 12"></polyline></svg>
+            </div>
+          </div>
+          <span className="text-3xl font-bold text-white tracking-tight">{shortlistedCount}</span>
         </div>
-        <div className="bg-[#1c1c21] border border-zinc-800 rounded-xl p-5 flex flex-col justify-center">
-          <p className="text-zinc-400 text-sm font-medium mb-1">Interviews</p>
-          <p className="text-2xl font-bold text-amber-500">{interviewsCount}</p>
+
+        <div className="flex flex-col justify-between p-5 rounded-2xl border border-zinc-900 bg-zinc-950/40 hover:bg-zinc-950/60 transition-colors text-left">
+          <div className="flex items-center justify-between mb-4 w-full">
+            <span className="text-xs font-semibold text-zinc-500 uppercase tracking-wider">Interviews</span>
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg border border-amber-950/50 bg-amber-950/10 text-amber-500">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+            </div>
+          </div>
+          <span className="text-3xl font-bold text-amber-500 tracking-tight">{interviewsCount}</span>
         </div>
-        <div className="bg-[#1c1c21] border border-zinc-800 rounded-xl p-5 flex flex-col justify-center">
-          <p className="text-zinc-400 text-sm font-medium mb-1">Success Rate</p>
-          <p className="text-2xl font-bold text-emerald-500">{successRate}%</p>
+
+        <div className="flex flex-col justify-between p-5 rounded-2xl border border-zinc-900 bg-zinc-950/40 hover:bg-zinc-950/60 transition-colors text-left">
+          <div className="flex items-center justify-between mb-4 w-full">
+            <span className="text-xs font-semibold text-zinc-500 uppercase tracking-wider">Success Rate</span>
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg border border-emerald-950/50 bg-emerald-950/10 text-emerald-500">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="20" x2="12" y2="10"></line><line x1="18" y1="20" x2="18" y2="4"></line><line x1="6" y1="20" x2="6" y2="16"></line></svg>
+            </div>
+          </div>
+          <span className="text-3xl font-bold text-emerald-500 tracking-tight">{successRate}%</span>
+        </div>
+      </div>
+
+      {/* Filters bar */}
+      <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-4 mb-6">
+        {/* Search input */}
+        <div className="relative w-full md:max-w-md">
+          <span className="absolute inset-y-0 left-3 flex items-center pointer-events-none">
+            <Magnifier className="h-4 w-4 text-zinc-500" />
+          </span>
+          <input
+            type="text"
+            placeholder="Search by job title or company..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="w-full h-11 pl-10 pr-10 rounded-xl border border-zinc-900 bg-zinc-950/80 text-sm text-white placeholder-zinc-500 outline-none focus:border-[#0088FF]/50 transition-colors"
+          />
+          {searchQuery && (
+            <button
+              onClick={() => setSearchQuery("")}
+              className="absolute inset-y-0 right-3 flex items-center text-zinc-500 hover:text-white text-xs bg-transparent border-0 cursor-pointer"
+              type="button"
+            >
+              ✕
+            </button>
+          )}
+        </div>
+
+        {/* Dropdowns */}
+        <div className="flex items-center gap-3">
+          <select
+            value={statusFilter}
+            onChange={(e) => setStatusFilter(e.target.value)}
+            className="h-11 px-4 rounded-xl border border-zinc-900 bg-zinc-950/80 text-sm text-white placeholder-zinc-500 outline-none focus:border-[#0088FF]/50 transition-colors cursor-pointer"
+          >
+            <option value="all">All Statuses</option>
+            {STATUS_KEYS.map((status) => (
+              <option key={status} value={status}>
+                {status}
+              </option>
+            ))}
+          </select>
+
+          <select
+            value={`${sortBy}-${sortOrder}`}
+            onChange={(e) => {
+              const [field, order] = e.target.value.split("-");
+              setSortBy(field);
+              setSortOrder(order);
+            }}
+            className="h-11 px-4 rounded-xl border border-zinc-900 bg-zinc-950/80 text-sm text-white placeholder-zinc-500 outline-none focus:border-[#0088FF]/50 transition-colors cursor-pointer"
+          >
+            <option value="createdAt-desc">Newest Applied</option>
+            <option value="createdAt-asc">Oldest Applied</option>
+            <option value="jobTitle-asc">Title (A-Z)</option>
+            <option value="jobTitle-desc">Title (Z-A)</option>
+            <option value="companyName-asc">Company (A-Z)</option>
+            <option value="companyName-desc">Company (Z-A)</option>
+          </select>
         </div>
       </div>
 
       {/* Table Section */}
-      <div className="bg-[#16161a] border border-zinc-800 rounded-xl overflow-hidden">
+      <div className="rounded-2xl border border-zinc-900 bg-zinc-950/40 p-6 shadow-xl mb-6 flex flex-col">
         <div className="overflow-x-auto">
-          <table className="w-full text-left border-collapse min-w-[800px]">
+          <table className="w-full text-left text-sm text-zinc-400 border-collapse min-w-[800px]">
             <thead>
-              <tr className="border-b border-zinc-800">
-                <th className="py-4 px-6 text-sm font-medium text-zinc-300">Job Title</th>
-                <th className="py-4 px-6 text-sm font-medium text-zinc-300">Company</th>
-                <th className="py-4 px-6 text-sm font-medium text-zinc-300">Applied</th>
-                <th className="py-4 px-6 text-sm font-medium text-zinc-300">Status</th>
-                <th className="py-4 px-6 text-sm font-medium text-zinc-300 text-right">Action</th>
+              <tr className="border-b border-zinc-900 text-zinc-500 font-semibold text-xs uppercase tracking-wider">
+                <th className="pb-3 font-semibold text-left">Job Title</th>
+                <th className="pb-3 font-semibold text-left">Company</th>
+                <th className="pb-3 font-semibold text-left">Applied</th>
+                <th className="pb-3 font-semibold text-left">Status</th>
+                <th className="pb-3 font-semibold text-right">Action</th>
               </tr>
             </thead>
             <tbody>
@@ -166,10 +295,10 @@ export default function ApplicationsClient({ applications }) {
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: index * 0.05 }}
-                    className="border-b border-zinc-800/50 hover:bg-white/[0.02] transition-colors"
+                    className="border-b border-zinc-900 hover:bg-white/[0.02] transition-colors"
                   >
                     {/* Job Title & Logo */}
-                    <td className="py-4 px-6">
+                    <td className="py-4 pr-6">
                       <div className="flex items-center gap-4">
                         <div className="relative shrink-0">
                           {app.companyLogo ? (
@@ -198,7 +327,7 @@ export default function ApplicationsClient({ applications }) {
                     </td>
 
                     {/* Company */}
-                    <td className="py-4 px-6 text-sm text-zinc-300">
+                    <td className="py-4 px-6 text-sm">
                       {app.companyName || "Unknown Company"}
                     </td>
 
@@ -234,49 +363,50 @@ export default function ApplicationsClient({ applications }) {
         </div>
 
         {/* Footer Pagination */}
-        <div className="border-t border-zinc-800 p-4 flex items-center justify-between bg-[#1a1a1f]">
+        <div className="flex flex-col sm:flex-row justify-between items-center mt-6 pt-6 border-t border-zinc-900 gap-4">
           <p className="text-xs text-zinc-500">
-            Showing {enrichedApps.length === 0 ? 0 : startIndex + 1}-{endIndex} of {enrichedApps.length} applications
+            Showing {filteredApplications.length === 0 ? 0 : startIndex + 1}-{endIndex} of {filteredApplications.length} applications
           </p>
           
-          <div className="flex items-center gap-1">
-            <button 
-              onClick={handlePrevPage}
-              disabled={safeCurrentPage === 1}
-              className="p-1 rounded text-zinc-500 hover:text-white transition-colors disabled:opacity-30 disabled:hover:text-zinc-500 cursor-pointer disabled:cursor-default"
+          <div className="flex items-center gap-2">
+            <Button
+              size="sm"
+              variant="flat"
+              isDisabled={safeCurrentPage === 1}
+              onPress={handlePrevPage}
+              className="bg-zinc-900 text-zinc-400 hover:bg-zinc-800 disabled:opacity-50 min-w-20"
             >
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <polyline points="15 18 9 12 15 6"></polyline>
-              </svg>
-            </button>
+              Previous
+            </Button>
             
-            {Array.from({ length: totalPages }).map((_, i) => {
-              const pageNum = i + 1;
-              const isActive = pageNum === safeCurrentPage;
-              return (
-                <button 
-                  key={pageNum}
-                  onClick={() => setCurrentPage(pageNum)}
-                  className={`w-6 h-6 flex items-center justify-center rounded text-xs font-medium transition-colors ${
-                    isActive 
-                      ? 'bg-white text-black font-bold' 
-                      : 'text-zinc-400 hover:text-white'
-                  }`}
-                >
-                  {pageNum}
-                </button>
-              );
-            })}
+            <div className="flex items-center gap-1 hidden sm:flex">
+              {Array.from({ length: totalPages }).map((_, i) => {
+                const pageNum = i + 1;
+                return (
+                  <button
+                    key={pageNum}
+                    onClick={() => setCurrentPage(pageNum)}
+                    className={`flex h-8 w-8 items-center justify-center rounded-lg text-xs transition-colors ${
+                      safeCurrentPage === pageNum
+                        ? "bg-[#0088FF] text-white font-bold shadow-md"
+                        : "bg-zinc-900 text-zinc-400 hover:bg-zinc-800 font-semibold"
+                    }`}
+                  >
+                    {pageNum}
+                  </button>
+                );
+              })}
+            </div>
 
-            <button 
-              onClick={handleNextPage}
-              disabled={safeCurrentPage === totalPages}
-              className="p-1 rounded text-zinc-500 hover:text-white transition-colors disabled:opacity-30 disabled:hover:text-zinc-500 cursor-pointer disabled:cursor-default"
+            <Button
+              size="sm"
+              variant="flat"
+              isDisabled={safeCurrentPage === totalPages}
+              onPress={handleNextPage}
+              className="bg-zinc-900 text-zinc-400 hover:bg-zinc-800 disabled:opacity-50 min-w-20"
             >
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <polyline points="9 18 15 12 9 6"></polyline>
-              </svg>
-            </button>
+              Next
+            </Button>
           </div>
         </div>
       </div>

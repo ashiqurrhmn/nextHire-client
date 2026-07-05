@@ -52,9 +52,5 @@ export default async function SeekerApplicationsPage() {
     return app;
   });
 
-  return (
-    <div className="max-w-6xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
-      <ApplicationsClient applications={enrichedApplications} />
-    </div>
-  );
+  return <ApplicationsClient applications={enrichedApplications} />;
 }

@@ -34,6 +34,8 @@ export default function Pricing({ embedded = false }) {
     (activeTab === "recruiters" && userRole !== "recruiter")
   );
 
+  const currentUserPlan = session?.user?.plan;
+
   const [dbPlans, setDbPlans] = useState({ seeker: [], recruiter: [] });
   const [loading, setLoading] = useState(true);
 
@@ -117,7 +119,7 @@ export default function Pricing({ embedded = false }) {
   const currentPlans = activeTab === "seekers" ? seekerPlans : recruiterPlans;
 
   return (
-    <section className={`relative overflow-hidden ${embedded ? 'py-8' : 'pb-24 sm:py-32'} px-4 sm:px-6 w-full ${embedded ? 'bg-transparent' : 'bg-black'}`}>
+    <section className={`relative overflow-hidden ${embedded ? 'py-8' : 'pb-10 sm:py-12'} px-4 sm:px-6 w-full ${embedded ? 'bg-transparent' : 'bg-black'}`}>
       {/* Ambient background glows */}
       <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[500px] bg-[#0088FF]/[0.05] rounded-full blur-[150px] pointer-events-none" />
       <div className="absolute bottom-0 right-1/4 w-[600px] h-[400px] bg-purple-500/[0.05] rounded-full blur-[150px] pointer-events-none" />
@@ -245,7 +247,7 @@ export default function Pricing({ embedded = false }) {
                   ))}
                 </div>
 
-                {plan.gradient && (
+                {plan.gradient && currentUserPlan !== plan.id && (
                   <form action="/api/checkout_sessions" method="POST">
                     <input type="hidden" name="price_id" value={plan.id} />
                     <section>
@@ -269,6 +271,15 @@ export default function Pricing({ embedded = false }) {
                       </button>
                     </section>
                   </form>
+                )}
+                {plan.gradient && currentUserPlan === plan.id && (
+                  <button
+                    disabled
+                    className="w-full h-12 rounded-xl font-bold text-base bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 cursor-not-allowed flex items-center justify-center gap-2"
+                  >
+                    <Check size={18} />
+                    Current Plan
+                  </button>
                 )}
               </motion.div>
             ))}

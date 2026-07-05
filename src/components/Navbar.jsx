@@ -17,11 +17,12 @@ export default function Navbar() {
   const userName = user?.name || user?.email || "User";
   // console.log(session);
 
-  const dashboardHref = user?.role === "admin"
-    ? "/dashboard/admin"
-    : user?.role === "recruiter" 
-      ? "/dashboard/recruiter" 
-      : "/dashboard/seeker";
+  const dashboardHref =
+    user?.role === "admin"
+      ? "/dashboard/admin"
+      : user?.role === "recruiter"
+        ? "/dashboard/recruiter"
+        : "/dashboard/seeker";
 
   const handleSignOut = async () => {
     setIsSigningOut(true);
@@ -50,7 +51,6 @@ export default function Navbar() {
                 height={36}
                 priority
                 className="h-10 w-auto object-contain transition-transform duration-300 hover:scale-[1.02]"
-                
               />
             </Link>
           </div>
@@ -74,14 +74,7 @@ export default function Navbar() {
                   Browse Jobs
                 </Link>
               </li>
-              <li>
-                <Link
-                  href="#"
-                  className={`text-[14px] font-medium transition-colors duration-200 ${pathname === "/company" ? "text-[#0088FF]" : "text-zinc-300 hover:text-white"}`}
-                >
-                  Company
-                </Link>
-              </li>
+            
               <li>
                 <Link
                   href="/pricing"
@@ -95,7 +88,9 @@ export default function Navbar() {
                   <Link
                     href={dashboardHref}
                     className={`text-[14px] font-medium transition-colors duration-200 ${
-                      pathname?.startsWith("/dashboard") ? "text-[#0088FF]" : "text-zinc-300 hover:text-white"
+                      pathname?.startsWith("/dashboard")
+                        ? "text-[#0088FF]"
+                        : "text-zinc-300 hover:text-white"
                     }`}
                   >
                     Dashboard
@@ -219,7 +214,9 @@ export default function Navbar() {
                     href={dashboardHref}
                     onClick={() => setIsMenuOpen(false)}
                     className={`block py-2 text-base font-medium px-3 rounded-lg transition-colors ${
-                      pathname?.startsWith("/dashboard") ? "text-[#0088FF] bg-[#0088FF]/10" : "text-zinc-300 hover:text-white hover:bg-zinc-900/40"
+                      pathname?.startsWith("/dashboard")
+                        ? "text-[#0088FF] bg-[#0088FF]/10"
+                        : "text-zinc-300 hover:text-white hover:bg-zinc-900/40"
                     }`}
                   >
                     Dashboard

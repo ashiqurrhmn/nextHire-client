@@ -11,8 +11,12 @@ export const getCompanyJobs = async (companyId, status = "") => {
   return res.json();
 };
 
-export const getAllJobs = async () => {
-  return serverFetch('/api/jobs');
+export const getAllJobs = async (status = "") => {
+  let url = '/api/jobs';
+  if (status && status !== "all") {
+    url += `?status=${status}`;
+  }
+  return serverFetch(url);
 };
 
 

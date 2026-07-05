@@ -8,11 +8,11 @@ import { Briefcase, Magnifier } from "@gravity-ui/icons";
 import DashboardHeader from "@/components/dashboard/DashboardHeader";
 
 const STATUS_CONFIG = {
-  Applied: { color: "text-zinc-300", border: "border-zinc-500" },
-  Review: { color: "text-amber-400", border: "border-amber-500/50" },
-  Shortlisted: { color: "text-emerald-400", border: "border-emerald-500/50" },
-  Rejected: { color: "text-red-500", border: "border-red-500/50" },
-  Offered: { color: "text-zinc-100", border: "border-zinc-300" }
+  Applied: { color: "text-blue-400", border: "border-blue-900/40", bg: "bg-blue-950/20" },
+  Review: { color: "text-amber-400", border: "border-amber-900/40", bg: "bg-amber-950/20" },
+  Shortlisted: { color: "text-emerald-400", border: "border-emerald-900/40", bg: "bg-emerald-950/20" },
+  Rejected: { color: "text-red-400", border: "border-red-900/40", bg: "bg-red-950/20" },
+  Offered: { color: "text-purple-400", border: "border-purple-900/40", bg: "bg-purple-950/20" }
 };
 
 const STATUS_KEYS = Object.keys(STATUS_CONFIG);
@@ -56,18 +56,28 @@ export default function ApplicationsClient({ applications }) {
   // Sort by most recent
   const sortedApplications = [...applications].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
 
-  // Generate deterministic mock statuses for UI demonstration
-  const enrichedApps = sortedApplications.map((app, index) => {
-    // We use a simple hash of the index to pick a status so it's stable
-    const mockStatus = STATUS_KEYS[index % STATUS_KEYS.length];
-    return { ...app, uiStatus: mockStatus };
+  // Map backend status to UI status
+  const getUiStatus = (status) => {
+    if (!status) return "Applied";
+    const s = status.toLowerCase();
+    if (s === "applied") return "Applied";
+    if (s === "shortlisted") return "Shortlisted";
+    if (s === "interviewing") return "Review";
+    if (s === "rejected") return "Rejected";
+    if (s === "hired") return "Offered";
+    return "Applied";
+  };
+
+  const enrichedApps = sortedApplications.map((app) => {
+    return { ...app, uiStatus: getUiStatus(app.status) };
   });
 
   const totalApplied = enrichedApps.length;
   const shortlistedCount = enrichedApps.filter(a => a.uiStatus === 'Shortlisted').length;
   const interviewsCount = enrichedApps.filter(a => a.uiStatus === 'Review' || a.uiStatus === 'Offered').length;
+  const offersCount = enrichedApps.filter(a => a.uiStatus === 'Offered').length;
   const successRate = totalApplied > 0 
-    ? Math.round((enrichedApps.filter(a => a.uiStatus === 'Offered').length / totalApplied) * 100) 
+    ? Math.round((offersCount / totalApplied) * 100) 
     : 0;
 
   // Filter and Sort logic
@@ -171,7 +181,7 @@ export default function ApplicationsClient({ applications }) {
       </div>
 
       {/* Stats Grid */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+      <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-8">
         <div className="flex flex-col justify-between p-5 rounded-2xl border border-zinc-900 bg-zinc-950/40 hover:bg-zinc-950/60 transition-colors text-left">
           <div className="flex items-center justify-between mb-4 w-full">
             <span className="text-xs font-semibold text-zinc-500 uppercase tracking-wider">Total Applied</span>
@@ -200,6 +210,16 @@ export default function ApplicationsClient({ applications }) {
             </div>
           </div>
           <span className="text-3xl font-bold text-amber-500 tracking-tight">{interviewsCount}</span>
+        </div>
+
+        <div className="flex flex-col justify-between p-5 rounded-2xl border border-zinc-900 bg-zinc-950/40 hover:bg-zinc-950/60 transition-colors text-left">
+          <div className="flex items-center justify-between mb-4 w-full">
+            <span className="text-xs font-semibold text-zinc-500 uppercase tracking-wider">Offers</span>
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg border border-purple-950/50 bg-purple-950/10 text-purple-500">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" /></svg>
+            </div>
+          </div>
+          <span className="text-3xl font-bold text-purple-500 tracking-tight">{offersCount}</span>
         </div>
 
         <div className="flex flex-col justify-between p-5 rounded-2xl border border-zinc-900 bg-zinc-950/40 hover:bg-zinc-950/60 transition-colors text-left">
@@ -338,7 +358,7 @@ export default function ApplicationsClient({ applications }) {
 
                     {/* Status */}
                     <td className="py-4 px-6">
-                      <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium border bg-transparent ${statusStyle.color} ${statusStyle.border}`}>
+                      <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium border ${statusStyle.bg || 'bg-transparent'} ${statusStyle.color} ${statusStyle.border}`}>
                         {app.uiStatus}
                       </span>
                     </td>

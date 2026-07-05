@@ -1,9 +1,12 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import Image from "next/image";
 import { useSession } from "@/lib/auth-client";
 
 export default function DashboardHeader() {
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
   const { data: session, isPending } = useSession();
   const user = session?.user;
   const userName = user?.name || user?.email || "User";
@@ -45,7 +48,7 @@ export default function DashboardHeader() {
         </button>
 
         {/* User Block */}
-        {!isPending && user && (
+        {mounted && !isPending && user && (
           <div className="flex items-center gap-3">
             <div className="hidden sm:flex flex-col text-right">
               <span className="text-sm font-semibold text-white">{userName}</span>

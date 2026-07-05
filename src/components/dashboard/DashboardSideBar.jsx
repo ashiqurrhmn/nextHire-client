@@ -144,7 +144,6 @@ export function DashboardSideBar() {
   const getNavItems = () => {
     if (userRole === "recruiter") {
       return [
-        { icon: HomeIcon, label: "Home", href: "/" },
         { icon: GridIcon, label: "Dashboard", href: "/dashboard/recruiter" },
         { icon: CompanyIcon, label: "My Company", href: "/dashboard/recruiter/company" },
         { icon: BriefcaseIcon, label: "Manage Jobs", href: "/dashboard/recruiter/jobs" },

@@ -23,3 +23,18 @@ export const getAllJobs = async (status = "") => {
 export const getJobById = async (id) => {
   return serverFetch(`/api/jobs/${id}`);
 };
+
+export const trackJobView = async (jobId, companyId) => {
+  const res = await fetch(`${baseUrl}/api/jobs/${jobId}/views`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ companyId }),
+  });
+  return res.json();
+};
+
+export const getCompanyJobViews = async (companyId) => {
+  return serverFetch(`/api/job-views?companyId=${companyId}`);
+};

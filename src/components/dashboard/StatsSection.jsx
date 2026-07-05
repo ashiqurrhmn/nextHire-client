@@ -1,10 +1,10 @@
 import React from "react";
 
-export default function StatsSection() {
+export default function StatsSection({ totalJobs = 0, totalApplicants = 0, activeJobs = 0, closedJobs = 0 }) {
   const stats = [
     {
       title: "Total Job Posts",
-      value: "48",
+      value: totalJobs.toLocaleString(),
       iconClass: "bg-[#0088FF]/10 border-[#0088FF]/25 text-[#0088FF]",
       icon: (
         <svg
@@ -26,7 +26,7 @@ export default function StatsSection() {
     },
     {
       title: "Total Applicants",
-      value: "1,284",
+      value: totalApplicants.toLocaleString(),
       iconClass: "bg-[#FF5E00]/10 border-[#FF5E00]/25 text-[#FF5E00]",
       icon: (
         <svg
@@ -48,7 +48,7 @@ export default function StatsSection() {
     },
     {
       title: "Active Jobs",
-      value: "18",
+      value: activeJobs.toLocaleString(),
       iconClass: "bg-[#0088FF]/15 border-[#0088FF]/30 text-[#0088FF] shadow-[0_0_12px_rgba(0,136,255,0.1)]",
       icon: (
         <svg
@@ -67,7 +67,7 @@ export default function StatsSection() {
     },
     {
       title: "Jobs Closed",
-      value: "32",
+      value: closedJobs.toLocaleString(),
       iconClass: "bg-zinc-800/40 border-zinc-700/50 text-zinc-350",
       icon: (
         <svg

@@ -23,6 +23,18 @@ export default function JobDetailsClient({ job, initialHasApplied = false, total
   const params = useParams();
   const id = params?.id;
 
+  // Track view on mount
+  useEffect(() => {
+    if (job?._id && job?.companyId) {
+      // Basic tracking, could be extended to prevent dupes later
+      fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/jobs/${job._id}/views`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ companyId: job.companyId })
+      }).catch(err => console.error("Failed to track view", err));
+    }
+  }, [job?._id, job?.companyId]);
+
   const [plan, setPlan] = useState(null);
   
   useEffect(() => {

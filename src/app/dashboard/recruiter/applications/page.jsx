@@ -19,10 +19,12 @@ const RecruiterApplications = async () => {
   }
 
   return (
-    <RecruiterApplicationsPage
-      company={company}
-      initialApplications={initialApplications}
-    />
+    <React.Suspense fallback={<div className="p-8 text-center text-zinc-500">Loading...</div>}>
+      <RecruiterApplicationsPage
+        company={company}
+        initialApplications={initialApplications}
+      />
+    </React.Suspense>
   );
 };
 

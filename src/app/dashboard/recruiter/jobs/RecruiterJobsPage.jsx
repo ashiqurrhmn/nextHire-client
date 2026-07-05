@@ -31,12 +31,13 @@ import {
 } from "@gravity-ui/icons";
 import { getCompanyJobs } from "@/lib/api/jobs";
 import DashboardHeader from "@/components/dashboard/DashboardHeader";
-
+import JobApplicationsModal from "./JobApplicationsModal";
 
 const RecruiterJobsPage = ({ company, initialJobs }) => {
   const router = useRouter();
 
   const [jobs, setJobs] = useState(initialJobs || []);
+  const [selectedJobForApps, setSelectedJobForApps] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
@@ -189,7 +190,7 @@ const RecruiterJobsPage = ({ company, initialJobs }) => {
     const title = job.jobTitle || job.title || "Untitled Job";
     switch (key) {
       case "view_apps":
-        router.push(`/dashboard/recruiter/applications?jobId=${job._id || job.id}`);
+        router.push(`/dashboard/recruiter/applications?jobTitle=${encodeURIComponent(title)}`);
         break;
       case "edit":
         router.push(`/dashboard/recruiter/jobs/edit/${job._id || job.id}`);
@@ -331,7 +332,11 @@ const RecruiterJobsPage = ({ company, initialJobs }) => {
   };
 
   return (
-    <div className="flex flex-col min-h-full pb-8">
+    <div className="flex flex-col min-h-full pb-8 relative">
+      {selectedJobForApps && (
+        <JobApplicationsModal job={selectedJobForApps} onClose={() => setSelectedJobForApps(null)} />
+      )}
+      
       {/* Search Header */}
       <DashboardHeader />
 
@@ -635,7 +640,7 @@ const RecruiterJobsPage = ({ company, initialJobs }) => {
                           <Button
                             size="sm"
                             variant="light"
-                            onClick={() => router.push(`/dashboard/recruiter/applications?jobId=${job._id}`)}
+                            onClick={() => setSelectedJobForApps(job)}
                             className="h-8 rounded-lg text-xs font-bold text-[#0088FF] hover:bg-[#0088FF]/10 hover:text-white border-0 cursor-pointer"
                           >
                             Applicants

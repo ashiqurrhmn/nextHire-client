@@ -7,3 +7,7 @@ export const getApplications = async(applicantId)=>{
 export const getCompanyApplications = async (companyId) => {
     return serverFetch(`/api/applications?companyId=${companyId}`);
 };
+
+export const getJobApplications = async (jobId) => {
+    return serverFetch(`/api/applications?jobId=${jobId}`);
+};

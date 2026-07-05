@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useMemo, useEffect } from "react";
+import { useSearchParams } from "next/navigation";
 import {
   Button,
   Chip,
@@ -336,7 +337,8 @@ const RecruiterApplicationsPage = ({ company, initialApplications }) => {
   const [loading, setLoading] = useState(false);
 
   // Filter & Search
-  const [searchQuery, setSearchQuery] = useState("");
+  const searchParams = useSearchParams();
+  const [searchQuery, setSearchQuery] = useState(searchParams.get("jobTitle") || "");
   const [statusFilter, setStatusFilter] = useState("all");
   const [jobFilter, setJobFilter] = useState("all");
   const [sortBy, setSortBy] = useState("createdAt");

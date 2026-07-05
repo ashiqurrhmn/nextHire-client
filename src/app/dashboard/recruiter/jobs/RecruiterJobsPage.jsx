@@ -49,7 +49,12 @@ const RecruiterJobsPage = ({ company, initialJobs }) => {
 
   // Pagination states
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 5;
+  const itemsPerPage = 10;
+
+  // Reset to first page when filters change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchQuery, statusFilter, categoryFilter, sortBy, sortOrder]);
 
   // Fetch jobs on load / company change
   useEffect(() => {
@@ -654,6 +659,7 @@ const RecruiterJobsPage = ({ company, initialJobs }) => {
                               >
                                 <DropdownItem
                                   key="view_apps"
+                                  id="view_apps"
                                   className="flex cursor-pointer items-center rounded-lg p-2 text-sm text-zinc-300 hover:bg-zinc-900 outline-none data-[focused=true]:bg-zinc-900"
                                 >
                                   <div className="flex items-center gap-2">
@@ -663,6 +669,7 @@ const RecruiterJobsPage = ({ company, initialJobs }) => {
                                 </DropdownItem>
                                 <DropdownItem
                                   key="edit"
+                                  id="edit"
                                   className="flex cursor-pointer items-center rounded-lg p-2 text-sm text-zinc-300 hover:bg-zinc-900 outline-none data-[focused=true]:bg-zinc-900"
                                 >
                                   <div className="flex items-center gap-2">
@@ -673,6 +680,7 @@ const RecruiterJobsPage = ({ company, initialJobs }) => {
                                 {job.status !== "closed" && (
                                   <DropdownItem
                                     key="toggle_status"
+                                    id="toggle_status"
                                     className="flex cursor-pointer items-center rounded-lg p-2 text-sm text-zinc-300 hover:bg-zinc-900 outline-none data-[focused=true]:bg-zinc-900"
                                   >
                                     <div className="flex items-center gap-2">
@@ -683,6 +691,7 @@ const RecruiterJobsPage = ({ company, initialJobs }) => {
                                 )}
                                 <DropdownItem
                                   key="delete"
+                                  id="delete"
                                   className="flex cursor-pointer items-center rounded-lg p-2 text-sm text-red-400 hover:bg-red-950/20 hover:text-red-350 outline-none border-t border-zinc-900 data-[focused=true]:bg-red-950/25"
                                 >
                                   <div className="flex items-center gap-2">
@@ -711,15 +720,43 @@ const RecruiterJobsPage = ({ company, initialJobs }) => {
               {Math.min(currentPage * itemsPerPage, filteredJobs.length)} of{" "}
               {filteredJobs.length} job postings
             </span>
-            <Pagination
-              total={totalPages}
-              page={currentPage}
-              onChange={setCurrentPage}
-              color="primary"
-              variant="flat"
-              size="sm"
-              className="[&_[data-slot=wrapper]]:gap-1 [&_[data-slot=wrapper]]:bg-transparent [&_[data-slot=wrapper]]:border-0 [&_[data-slot=item]]:bg-zinc-900 [&_[data-slot=item]]:text-zinc-400 hover:[&_[data-slot=item]]:bg-zinc-800 [&_[data-slot=item]]:border-zinc-800 [&_[data-slot=item]]:rounded-lg [&_[data-slot=item]]:text-xs [&_[data-slot=item]]:font-semibold [&_[data-slot=cursor]]:bg-[#0088FF] [&_[data-slot=cursor]]:text-white [&_[data-slot=cursor]]:font-bold [&_[data-slot=cursor]]:rounded-lg [&_[data-slot=cursor]]:shadow-md"
-            />
+            <div className="flex items-center gap-2">
+              <Button
+                size="sm"
+                variant="flat"
+                isDisabled={currentPage === 1}
+                onPress={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+                className="bg-zinc-900 text-zinc-400 hover:bg-zinc-800 disabled:opacity-50 min-w-20"
+              >
+                Previous
+              </Button>
+              
+              <div className="flex items-center gap-1 hidden sm:flex">
+                {Array.from({ length: totalPages }).map((_, i) => (
+                  <button
+                    key={i}
+                    onClick={() => setCurrentPage(i + 1)}
+                    className={`flex h-8 w-8 items-center justify-center rounded-lg text-xs transition-colors ${
+                      currentPage === i + 1
+                        ? "bg-[#0088FF] text-white font-bold shadow-md"
+                        : "bg-zinc-900 text-zinc-400 hover:bg-zinc-800 font-semibold"
+                    }`}
+                  >
+                    {i + 1}
+                  </button>
+                ))}
+              </div>
+
+              <Button
+                size="sm"
+                variant="flat"
+                isDisabled={currentPage === totalPages}
+                onPress={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
+                className="bg-zinc-900 text-zinc-400 hover:bg-zinc-800 disabled:opacity-50 min-w-20"
+              >
+                Next
+              </Button>
+            </div>
           </div>
         )}
       </div>

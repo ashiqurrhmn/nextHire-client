@@ -20,7 +20,7 @@ export default function DashboardHeader() {
     : "NH"; 
 
   return (
-    <header className="flex flex-col sm:flex-row items-center justify-between gap-4 py-4 mb-6 border-b border-zinc-900">
+    <header className="flex flex-col sm:flex-row items-center justify-between gap-4 pb-4 pt-0 mb-6 border-b border-zinc-900">
       {/* Search Input Removed */}
       <div className="flex-1"></div>
 

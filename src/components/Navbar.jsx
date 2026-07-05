@@ -50,7 +50,7 @@ export default function Navbar() {
                 height={36}
                 priority
                 className="h-10 w-auto object-contain transition-transform duration-300 hover:scale-[1.02]"
-                style={{ width: "auto", height: "auto" }}
+                
               />
             </Link>
           </div>

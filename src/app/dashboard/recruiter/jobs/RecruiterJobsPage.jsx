@@ -38,6 +38,7 @@ const RecruiterJobsPage = ({ company, initialJobs }) => {
 
   const [jobs, setJobs] = useState(initialJobs || []);
   const [selectedJobForApps, setSelectedJobForApps] = useState(null);
+  const [jobToDelete, setJobToDelete] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
@@ -202,9 +203,7 @@ const RecruiterJobsPage = ({ company, initialJobs }) => {
         handleDuplicateJob(job);
         break;
       case "delete":
-        if (confirm(`Are you sure you want to delete the job posting for "${title}"?`)) {
-          handleDeleteJob(job._id || job.id);
-        }
+        setJobToDelete(job);
         break;
       default:
         break;
@@ -335,6 +334,41 @@ const RecruiterJobsPage = ({ company, initialJobs }) => {
     <div className="flex flex-col min-h-full pb-8 relative">
       {selectedJobForApps && (
         <JobApplicationsModal job={selectedJobForApps} onClose={() => setSelectedJobForApps(null)} />
+      )}
+      
+      {jobToDelete && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+          <div className="absolute inset-0 bg-black/80 backdrop-blur-sm" onClick={() => setJobToDelete(null)} />
+          <div className="relative flex flex-col bg-[#0a0a0c] border border-zinc-900 text-white rounded-2xl w-full max-w-md shadow-2xl z-10 animate-in fade-in zoom-in-95 duration-200 overflow-hidden">
+            <div className="p-6">
+              <div className="w-12 h-12 rounded-full bg-red-500/10 text-red-500 flex items-center justify-center mb-4">
+                <TrashBin size={24} />
+              </div>
+              <h3 className="text-xl font-bold text-white mb-2">Delete Job Posting</h3>
+              <p className="text-sm text-zinc-400 leading-relaxed">
+                Are you sure you want to delete <span className="font-semibold text-zinc-200">"{jobToDelete.jobTitle || jobToDelete.title || "Untitled Job"}"</span>? This action cannot be undone and will remove all associated applications.
+              </p>
+            </div>
+            <div className="p-4 bg-zinc-950/50 border-t border-zinc-900 flex justify-end gap-3">
+              <Button
+                variant="flat"
+                className="bg-zinc-800 text-white font-medium hover:bg-zinc-700 h-10 px-4 rounded-xl cursor-pointer border-0"
+                onClick={() => setJobToDelete(null)}
+              >
+                Cancel
+              </Button>
+              <Button
+                className="bg-red-500 hover:bg-red-600 text-white font-medium h-10 px-4 rounded-xl shadow-[0_0_15px_rgba(239,68,68,0.2)] cursor-pointer border-0"
+                onClick={() => {
+                  handleDeleteJob(jobToDelete._id || jobToDelete.id);
+                  setJobToDelete(null);
+                }}
+              >
+                Delete Job
+              </Button>
+            </div>
+          </div>
+        </div>
       )}
       
       {/* Search Header */}

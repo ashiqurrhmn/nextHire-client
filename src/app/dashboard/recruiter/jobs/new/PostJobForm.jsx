@@ -11,6 +11,7 @@ import {
   Label,
   ListBox,
   Select,
+  Spinner,
   Switch,
   TextArea,
   TextField,
@@ -79,6 +80,7 @@ export default function PostJobForm({company, existingJob = null}) {
 
   const [isRemote, setIsRemote] = useState(existingJob?.isRemote || false);
   const [errors, setErrors] = useState({});
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -177,6 +179,7 @@ export default function PostJobForm({company, existingJob = null}) {
     }
 
     setErrors({});
+    setIsSubmitting(true);
 
     const payload = {
       ...data,
@@ -188,26 +191,37 @@ export default function PostJobForm({company, existingJob = null}) {
       isPubliclyVisible: true,
     };
 
-    if (isEditMode) {
-      const res = await updateJob(existingJob._id, payload);
-      if (res?.error) {
-        toast.error(res.error);
-        return;
+    try {
+      if (isEditMode) {
+        const res = await updateJob(existingJob._id, payload);
+        if (res?.error) {
+          toast.error(res.error);
+          setIsSubmitting(false);
+          return;
+        }
+        toast.success("Job updated successfully!");
+        setTimeout(() => {
+          router.push("/dashboard/recruiter/jobs");
+        }, 1500);
+      } else {
+        const res = await createJob(payload);
+        if (res?.error) {
+          toast.error(res.error);
+          setIsSubmitting(false);
+          return;
+        }
+        if (res?.insertedId) {
+          toast.success("Job posted successfully!");
+          form.reset();
+          setIsRemote(false);
+          setTimeout(() => {
+            router.push("/dashboard/recruiter/jobs");
+          }, 1500);
+        }
       }
-      toast.success("Job updated successfully!");
-      router.push("/dashboard/recruiter/jobs");
-    } else {
-      const res = await createJob(payload);
-      if (res?.error) {
-        toast.error(res.error);
-        return;
-      }
-      if (res?.insertedId) {
-        toast.success("Job posted successfully!");
-        form.reset();
-        setIsRemote(false);
-        router.push("/dashboard/recruiter/jobs");
-      }
+    } catch (err) {
+      toast.error("Something went wrong. Please try again.");
+      setIsSubmitting(false);
     }
   };
 
@@ -541,9 +555,17 @@ export default function PostJobForm({company, existingJob = null}) {
               </Button>
               <Button
                 type="submit"
-                className="h-11 rounded-xl bg-gradient-to-r from-[#0088FF] to-[#0055FF] px-6 text-sm font-bold text-white shadow-lg shadow-[#0088FF]/20 transition-all hover:from-[#339FFF] hover:to-[#2277FF]"
+                isDisabled={isSubmitting}
+                className="h-11 rounded-xl bg-gradient-to-r from-[#0088FF] to-[#0055FF] px-6 text-sm font-bold text-white shadow-lg shadow-[#0088FF]/20 transition-all hover:from-[#339FFF] hover:to-[#2277FF] disabled:opacity-60 disabled:cursor-not-allowed"
               >
-                {isEditMode ? "Save Changes" : "Post Job"}
+                {isSubmitting ? (
+                  <span className="flex items-center gap-2">
+                    <Spinner size="sm" color="white" />
+                    {isEditMode ? "Saving..." : "Posting..."}
+                  </span>
+                ) : (
+                  isEditMode ? "Save Changes" : "Post Job"
+                )}
               </Button>
             </div>
           </div>

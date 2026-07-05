@@ -6,7 +6,7 @@ import DashboardHeader from "@/components/dashboard/DashboardHeader";
 import JobCard from "@/components/JobCard";
 import { getSavedJobs } from "@/lib/api/saved-jobs";
 import { getMyAppliedJobIds } from "@/lib/actions/applications";
-import { Spinner, Button } from "@heroui/react";
+import { Skeleton, Button } from "@heroui/react";
 import { Bookmark, Briefcase, Magnifier } from "@gravity-ui/icons";
 import Link from "next/link";
 
@@ -152,8 +152,29 @@ export default function SavedJobsPage() {
 
       <div className="flex-1 w-full">
         {loading ? (
-          <div className="flex justify-center items-center py-20">
-            <Spinner size="lg" color="primary" />
+          <div className="animate-pulse w-full flex flex-col gap-6">
+            {/* Filter Bar Skeleton */}
+            <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-4">
+              <Skeleton className="h-11 w-full md:max-w-md rounded-xl bg-zinc-800/50" />
+              <div className="flex flex-col sm:flex-row items-center gap-3 w-full md:w-auto">
+                <Skeleton className="h-11 w-full sm:w-36 rounded-xl bg-zinc-800/50" />
+                <Skeleton className="h-11 w-full sm:w-40 rounded-xl bg-zinc-800/50" />
+              </div>
+            </div>
+            
+            {/* Job Cards Skeleton */}
+            <div className="flex flex-col gap-4">
+              {[1, 2, 3].map((i) => (
+                <div key={i} className="rounded-2xl border border-zinc-900 bg-zinc-950/40 p-6 flex flex-col md:flex-row gap-6 md:items-center w-full">
+                  <Skeleton className="h-16 w-16 rounded-xl bg-zinc-800 shrink-0" />
+                  <div className="flex-1 flex flex-col gap-3">
+                    <Skeleton className="h-6 w-1/3 rounded-md bg-zinc-800" />
+                    <Skeleton className="h-4 w-1/4 rounded-md bg-zinc-800/50" />
+                  </div>
+                  <Skeleton className="h-10 w-24 rounded-lg bg-zinc-800 md:ml-auto" />
+                </div>
+              ))}
+            </div>
           </div>
         ) : jobs.length === 0 ? (
           <div className="text-center text-zinc-500 py-20 rounded-3xl border border-zinc-800/60 bg-zinc-950/40 shadow-xl">

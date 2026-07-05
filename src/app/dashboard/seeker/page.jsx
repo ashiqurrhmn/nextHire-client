@@ -7,7 +7,7 @@ import DashboardHeader from "@/components/dashboard/DashboardHeader";
 import { getApplications } from "@/lib/api/applications";
 import { getSavedJobs } from "@/lib/api/saved-jobs";
 import { Briefcase, Bookmark, Clock, Sparkles } from "@gravity-ui/icons";
-import { Spinner } from "@heroui/react";
+import { Skeleton } from "@heroui/react";
 import {
   AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer,
   PieChart, Pie, Cell, Legend
@@ -128,8 +128,47 @@ export default function SeekerDashboardPage() {
       </h2>
 
       {loading ? (
-        <div className="flex justify-center items-center py-20 flex-1">
-          <Spinner size="lg" color="primary" />
+        <div className="animate-pulse w-full">
+          {/* Stats Skeleton */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 mb-8">
+            {[1, 2, 3, 4].map((i) => (
+              <div key={i} className="flex flex-col justify-between p-5 rounded-2xl border border-zinc-900 bg-zinc-950/40 h-[120px]">
+                <div className="flex items-center justify-between mb-4">
+                  <Skeleton className="w-24 h-4 rounded-md bg-zinc-800" />
+                  <Skeleton className="w-9 h-9 rounded-xl bg-zinc-800" />
+                </div>
+                <Skeleton className="w-16 h-8 rounded-md bg-zinc-800" />
+              </div>
+            ))}
+          </div>
+          
+          {/* Charts Skeleton */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+            {[1, 2].map((i) => (
+              <div key={i} className="p-6 rounded-2xl border border-zinc-900 bg-zinc-950/40 h-[340px] flex flex-col">
+                <Skeleton className="w-40 h-6 rounded-md bg-zinc-800 mb-6" />
+                <Skeleton className="w-full flex-1 rounded-xl bg-zinc-800/50" />
+              </div>
+            ))}
+          </div>
+
+          {/* Table Skeleton */}
+          <div className="flex flex-col lg:flex-row gap-6 items-stretch">
+            <div className="flex-1 p-6 rounded-2xl border border-zinc-900 bg-zinc-950/40 flex flex-col">
+              <div className="flex items-center justify-between mb-6">
+                <Skeleton className="w-48 h-6 rounded-md bg-zinc-800" />
+                <Skeleton className="w-16 h-4 rounded-md bg-zinc-800" />
+              </div>
+              <div className="flex flex-col gap-4">
+                {[1, 2, 3, 4, 5].map((i) => (
+                  <Skeleton key={i} className="w-full h-14 rounded-xl bg-zinc-800/50" />
+                ))}
+              </div>
+            </div>
+            <div className="lg:w-1/3 flex flex-col gap-6">
+              <Skeleton className="w-full h-full rounded-2xl bg-zinc-800/30 min-h-[250px]" />
+            </div>
+          </div>
         </div>
       ) : (
         <>

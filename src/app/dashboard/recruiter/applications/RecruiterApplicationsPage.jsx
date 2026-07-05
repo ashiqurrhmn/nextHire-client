@@ -344,7 +344,7 @@ const RecruiterApplicationsPage = ({ company, initialApplications }) => {
 
   // Pagination
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 8;
+  const itemsPerPage = 10;
 
   // Detail Modal
   const [selectedApp, setSelectedApp] = useState(null);
@@ -780,15 +780,43 @@ const RecruiterApplicationsPage = ({ company, initialApplications }) => {
               {Math.min(currentPage * itemsPerPage, filteredApplications.length)}{" "}
               of {filteredApplications.length} applications
             </span>
-            <Pagination
-              total={totalPages}
-              page={currentPage}
-              onChange={setCurrentPage}
-              color="primary"
-              variant="flat"
-              size="sm"
-              className="[&_[data-slot=wrapper]]:gap-1 [&_[data-slot=wrapper]]:bg-transparent [&_[data-slot=wrapper]]:border-0 [&_[data-slot=item]]:bg-zinc-900 [&_[data-slot=item]]:text-zinc-400 hover:[&_[data-slot=item]]:bg-zinc-800 [&_[data-slot=item]]:border-zinc-800 [&_[data-slot=item]]:rounded-lg [&_[data-slot=item]]:text-xs [&_[data-slot=item]]:font-semibold [&_[data-slot=cursor]]:bg-[#0088FF] [&_[data-slot=cursor]]:text-white [&_[data-slot=cursor]]:font-bold [&_[data-slot=cursor]]:rounded-lg [&_[data-slot=cursor]]:shadow-md"
-            />
+            <div className="flex items-center gap-2">
+              <Button
+                size="sm"
+                variant="flat"
+                isDisabled={currentPage === 1}
+                onPress={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+                className="bg-zinc-900 text-zinc-400 hover:bg-zinc-800 disabled:opacity-50 min-w-20"
+              >
+                Previous
+              </Button>
+              
+              <div className="flex items-center gap-1 hidden sm:flex">
+                {Array.from({ length: totalPages }).map((_, i) => (
+                  <button
+                    key={i}
+                    onClick={() => setCurrentPage(i + 1)}
+                    className={`flex h-8 w-8 items-center justify-center rounded-lg text-xs transition-colors ${
+                      currentPage === i + 1
+                        ? "bg-[#0088FF] text-white font-bold shadow-md"
+                        : "bg-zinc-900 text-zinc-400 hover:bg-zinc-800 font-semibold"
+                    }`}
+                  >
+                    {i + 1}
+                  </button>
+                ))}
+              </div>
+
+              <Button
+                size="sm"
+                variant="flat"
+                isDisabled={currentPage === totalPages}
+                onPress={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
+                className="bg-zinc-900 text-zinc-400 hover:bg-zinc-800 disabled:opacity-50 min-w-20"
+              >
+                Next
+              </Button>
+            </div>
           </div>
         )}
       </div>

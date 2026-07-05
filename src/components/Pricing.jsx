@@ -153,30 +153,30 @@ export default function Pricing({ embedded = false }) {
 
         {/* Custom Toggle Switch */}
         <div className="flex justify-center mb-16">
-          <div className="bg-zinc-900/80 p-1.5 rounded-full border border-zinc-800 flex items-center shadow-lg relative">
+          <div className="bg-zinc-900/80 backdrop-blur-md p-1.5 rounded-2xl border border-zinc-800 flex relative w-full max-w-[400px]">
             <button
               onClick={() => setActiveTab("seekers")}
-              className={`relative z-10 flex items-center gap-2 px-6 py-3 rounded-full text-sm font-semibold transition-colors duration-300 ${activeTab === "seekers" ? "text-white" : "text-zinc-400 hover:text-zinc-200"}`}
+              className={`relative z-10 flex-1 flex items-center justify-center gap-2 px-2 sm:px-6 py-3 rounded-xl text-sm font-semibold transition-colors duration-300 ${activeTab === "seekers" ? "text-white" : "text-zinc-400 hover:text-zinc-200"}`}
             >
-              <Person size={18} />
+              <Person width={18} height={18} />
               For Job Seekers
             </button>
             <button
               onClick={() => setActiveTab("recruiters")}
-              className={`relative z-10 flex items-center gap-2 px-6 py-3 rounded-full text-sm font-semibold transition-colors duration-300 ${activeTab === "recruiters" ? "text-white" : "text-zinc-400 hover:text-zinc-200"}`}
+              className={`relative z-10 flex-1 flex items-center justify-center gap-2 px-2 sm:px-6 py-3 rounded-xl text-sm font-semibold transition-colors duration-300 ${activeTab === "recruiters" ? "text-white" : "text-zinc-400 hover:text-zinc-200"}`}
             >
-              <Briefcase size={18} />
+              <Briefcase width={18} height={18} />
               For Recruiters
             </button>
 
-            {/* Animated Highlight */}
+            {/* Sliding Active Pill */}
             <motion.div
-              className="absolute top-1.5 bottom-1.5 bg-zinc-800 rounded-full border border-zinc-700 shadow-sm"
+              className={`absolute top-1.5 bottom-1.5 w-[calc(50%-6px)] rounded-xl bg-zinc-800/80 border shadow-sm ${activeTab === "seekers" ? "border-[#0088FF]/30" : "border-purple-500/30"}`}
               initial={false}
               animate={{
-                left: activeTab === "seekers" ? "0.375rem" : "50%",
-                width: "calc(50% - 0.375rem)",
+                x: activeTab === "seekers" ? "0%" : "100%"
               }}
+              style={{ left: "0.375rem" }}
               transition={{ type: "spring", stiffness: 300, damping: 25 }}
             />
           </div>
@@ -188,7 +188,7 @@ export default function Pricing({ embedded = false }) {
                 <div className="w-10 h-10 border-4 border-[#0088FF] border-t-transparent rounded-full animate-spin"></div>
              </div>
           ) : (
-          <AnimatePresence>
+          <AnimatePresence mode="wait">
             {currentPlans.map((plan, index) => (
               <motion.div
                 key={activeTab + plan.name}

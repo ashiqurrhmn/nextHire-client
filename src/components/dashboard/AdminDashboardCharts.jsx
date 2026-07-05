@@ -41,37 +41,45 @@ const CustomTooltip = ({ active, payload, label }) => {
   return null;
 };
 
-export default function DashboardCharts({ areaData = [], barData = [] }) {
+export default function AdminDashboardCharts({ growthData = [], categoryData = [] }) {
   return (
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
-      {/* Area Chart: Applications Over Time */}
+      {/* Area Chart: Platform Growth */}
       <div className="lg:col-span-2 bg-[#0a0a0c]/80 backdrop-blur-sm border border-zinc-900/80 rounded-3xl p-6 relative overflow-hidden group hover:border-zinc-800 transition-colors duration-500">
         {/* Subtle Background Glows */}
         <div className="absolute -top-32 -right-32 h-64 w-64 rounded-full bg-[#0088FF]/10 blur-[80px] transition-opacity duration-500 group-hover:bg-[#0088FF]/20" />
         <div className="absolute -bottom-32 -left-32 h-64 w-64 rounded-full bg-[#10B981]/5 blur-[80px] transition-opacity duration-500 group-hover:bg-[#10B981]/15" />
         
         <div className="mb-8 relative z-10">
-          <h3 className="text-xl font-bold text-white tracking-tight">Engagement Overview</h3>
-          <p className="text-sm text-zinc-500 mt-1 font-medium">Applications and listing views over the past 7 days</p>
+          <h3 className="text-xl font-bold text-white tracking-tight">Platform Growth</h3>
+          <p className="text-sm text-zinc-500 mt-1 font-medium">New users, companies, and jobs over the past 7 days</p>
         </div>
         
         <div className="h-[300px] w-full relative z-10">
           <ResponsiveContainer width="100%" height="100%">
-            <AreaChart data={areaData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+            <AreaChart data={growthData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
               <defs>
-                <linearGradient id="colorApps" x1="0" y1="0" x2="0" y2="1">
+                <linearGradient id="colorUsers" x1="0" y1="0" x2="0" y2="1">
                   <stop offset="0%" stopColor="#0088FF" stopOpacity={0.4}/>
                   <stop offset="100%" stopColor="#0088FF" stopOpacity={0}/>
                 </linearGradient>
-                <linearGradient id="colorViews" x1="0" y1="0" x2="0" y2="1">
+                <linearGradient id="colorCompanies" x1="0" y1="0" x2="0" y2="1">
                   <stop offset="0%" stopColor="#10B981" stopOpacity={0.3}/>
                   <stop offset="100%" stopColor="#10B981" stopOpacity={0}/>
                 </linearGradient>
-                <filter id="glowApps" x="-20%" y="-20%" width="140%" height="140%">
+                <linearGradient id="colorJobs" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor="#F59E0B" stopOpacity={0.3}/>
+                  <stop offset="100%" stopColor="#F59E0B" stopOpacity={0}/>
+                </linearGradient>
+                <filter id="glowUsers" x="-20%" y="-20%" width="140%" height="140%">
                   <feGaussianBlur stdDeviation="4" result="blur" />
                   <feComposite in="SourceGraphic" in2="blur" operator="over" />
                 </filter>
-                <filter id="glowViews" x="-20%" y="-20%" width="140%" height="140%">
+                <filter id="glowCompanies" x="-20%" y="-20%" width="140%" height="140%">
+                  <feGaussianBlur stdDeviation="4" result="blur" />
+                  <feComposite in="SourceGraphic" in2="blur" operator="over" />
+                </filter>
+                <filter id="glowJobs" x="-20%" y="-20%" width="140%" height="140%">
                   <feGaussianBlur stdDeviation="4" result="blur" />
                   <feComposite in="SourceGraphic" in2="blur" operator="over" />
                 </filter>
@@ -98,25 +106,36 @@ export default function DashboardCharts({ areaData = [], barData = [] }) {
               <Tooltip content={<CustomTooltip />} cursor={{ stroke: '#3f3f46', strokeWidth: 1, strokeDasharray: '4 4' }} />
               <Area
                 type="monotone"
-                dataKey="applications"
+                dataKey="users"
                 stroke="#0088FF"
                 strokeWidth={3}
                 fillOpacity={1}
-                fill="url(#colorApps)"
-                name="Applications"
-                filter="url(#glowApps)"
+                fill="url(#colorUsers)"
+                name="New Users"
+                filter="url(#glowUsers)"
                 activeDot={{ r: 6, fill: "#0088FF", stroke: "#fff", strokeWidth: 2, shadowColor: "#0088FF", shadowBlur: 10 }}
               />
               <Area
                 type="monotone"
-                dataKey="views"
+                dataKey="companies"
                 stroke="#10B981"
                 strokeWidth={3}
                 fillOpacity={1}
-                fill="url(#colorViews)"
-                name="Views"
-                filter="url(#glowViews)"
+                fill="url(#colorCompanies)"
+                name="New Companies"
+                filter="url(#glowCompanies)"
                 activeDot={{ r: 6, fill: "#10B981", stroke: "#fff", strokeWidth: 2 }}
+              />
+              <Area
+                type="monotone"
+                dataKey="jobs"
+                stroke="#F59E0B"
+                strokeWidth={3}
+                fillOpacity={1}
+                fill="url(#colorJobs)"
+                name="New Jobs"
+                filter="url(#glowJobs)"
+                activeDot={{ r: 6, fill: "#F59E0B", stroke: "#fff", strokeWidth: 2 }}
               />
             </AreaChart>
           </ResponsiveContainer>
@@ -125,16 +144,16 @@ export default function DashboardCharts({ areaData = [], barData = [] }) {
 
       {/* Bar Chart: Jobs by Category */}
       <div className="bg-[#0a0a0c]/80 backdrop-blur-sm border border-zinc-900/80 rounded-3xl p-6 flex flex-col relative overflow-hidden group hover:border-zinc-800 transition-colors duration-500">
-        <div className="absolute -top-32 -right-32 h-64 w-64 rounded-full bg-[#8B5CF6]/10 blur-[80px] transition-opacity duration-500 group-hover:bg-[#8B5CF6]/20" />
+        <div className="absolute -top-32 -right-32 h-64 w-64 rounded-full bg-[#F59E0B]/10 blur-[80px] transition-opacity duration-500 group-hover:bg-[#F59E0B]/20" />
         
         <div className="mb-8 relative z-10">
           <h3 className="text-xl font-bold text-white tracking-tight">Jobs by Category</h3>
-          <p className="text-sm text-zinc-500 mt-1 font-medium">Distribution of your postings</p>
+          <p className="text-sm text-zinc-500 mt-1 font-medium">Distribution of platform-wide jobs</p>
         </div>
         <div className="h-[300px] w-full flex-1 relative z-10">
           <ResponsiveContainer width="100%" height="100%">
             <BarChart
-              data={barData}
+              data={categoryData}
               layout="vertical"
               margin={{ top: 0, right: 10, left: -10, bottom: 0 }}
             >
@@ -162,7 +181,7 @@ export default function DashboardCharts({ areaData = [], barData = [] }) {
                 iconType="circle" 
                 wrapperStyle={{ fontSize: '13px', color: '#a1a1aa', fontWeight: 500, paddingTop: '10px' }} 
               />
-              <Bar dataKey="active" stackId="a" fill="#8B5CF6" radius={[0, 0, 0, 0]} name="Active" barSize={16} />
+              <Bar dataKey="active" stackId="a" fill="#0088FF" radius={[0, 0, 0, 0]} name="Active" barSize={16} />
               <Bar dataKey="closed" stackId="a" fill="#3f3f46" radius={[0, 4, 4, 0]} name="Closed" barSize={16} />
             </BarChart>
           </ResponsiveContainer>

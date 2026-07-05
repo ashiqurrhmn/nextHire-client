@@ -42,11 +42,20 @@ export default function SeekerDashboardPage() {
     fetchData();
   }, [user?.id]);
 
-  // We use the same deterministic mock UI statuses used in ApplicationsClient
+  const getUiStatus = (status) => {
+    if (!status) return "Applied";
+    const s = status.toLowerCase();
+    if (s === "applied") return "Applied";
+    if (s === "shortlisted") return "Shortlisted";
+    if (s === "interviewing" || s === "interview") return "Review";
+    if (s === "rejected") return "Rejected";
+    if (s === "hired" || s === "accepted" || s === "offered") return "Offered";
+    return "Applied";
+  };
+
   const STATUS_KEYS = ["Applied", "Review", "Shortlisted", "Rejected", "Offered"];
-  const enrichedApps = [...applications].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)).map((app, index) => {
-    const mockStatus = STATUS_KEYS[index % STATUS_KEYS.length];
-    return { ...app, uiStatus: mockStatus };
+  const enrichedApps = [...applications].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)).map((app) => {
+    return { ...app, uiStatus: getUiStatus(app.status) };
   });
 
   const totalApplied = enrichedApps.length;

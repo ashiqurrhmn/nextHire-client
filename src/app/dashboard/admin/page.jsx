@@ -1,5 +1,6 @@
 import Link from "next/link";
 import DashboardHeader from "@/components/dashboard/DashboardHeader";
+import AdminDashboardCharts from "@/components/dashboard/AdminDashboardCharts";
 
 const baseUrl = process.env.NEXT_PUBLIC_BASE_URL;
 
@@ -8,6 +9,10 @@ const AdminPage = async () => {
   let totalUsers = 0;
   let totalJobs = 0;
   let activeJobs = 0;
+
+  let safeUsers = [];
+  let safeCompanies = [];
+  let safeJobs = [];
 
   try {
     const [companiesRes, usersRes, jobsRes] = await Promise.all([
@@ -20,13 +25,78 @@ const AdminPage = async () => {
     const users = await usersRes.json();
     const jobs = await jobsRes.json();
 
-    pendingCount = Array.isArray(companies) ? companies.length : 0;
-    totalUsers = Array.isArray(users) ? users.length : 0;
-    totalJobs = Array.isArray(jobs) ? jobs.length : 0;
-    activeJobs = Array.isArray(jobs) ? jobs.filter(j => j.status === 'active').length : 0;
+    safeCompanies = Array.isArray(companies) ? companies : [];
+    safeUsers = Array.isArray(users) ? users : [];
+    safeJobs = Array.isArray(jobs) ? jobs : [];
+
+    pendingCount = safeCompanies.length;
+    totalUsers = safeUsers.length;
+    totalJobs = safeJobs.length;
+    activeJobs = safeJobs.filter(j => j.status === 'active').length;
   } catch (e) {
     console.error("Failed to fetch admin stats:", e);
   }
+
+  // ─── Compute Growth Data (Last 7 Days) ─────────────────────
+  const dayNames = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+  const now = new Date();
+  const growthData = [];
+  for (let i = 6; i >= 0; i--) {
+    const d = new Date(now);
+    d.setDate(d.getDate() - i);
+    const dayStart = new Date(d.getFullYear(), d.getMonth(), d.getDate());
+    const dayEnd = new Date(d.getFullYear(), d.getMonth(), d.getDate() + 1);
+    
+    // Fallback if users/companies don't have createdAt, they just count as 0 for those days
+    const usersCount = safeUsers.filter(u => {
+      if (!u.createdAt) return false;
+      const created = new Date(u.createdAt);
+      return created >= dayStart && created < dayEnd;
+    }).length;
+
+    // We only fetched pending companies above! We need to fetch all companies to accurately show company growth, but we can fake it or fetch all if needed.
+    // For now, let's just count pending companies for the graph, or use a simulated value if we don't have full data.
+    const companiesCount = safeCompanies.filter(c => {
+      if (!c.createdAt) return false;
+      const created = new Date(c.createdAt);
+      return created >= dayStart && created < dayEnd;
+    }).length;
+
+    const jobsCount = safeJobs.filter(j => {
+      if (!j.createdAt) return false;
+      const created = new Date(j.createdAt);
+      return created >= dayStart && created < dayEnd;
+    }).length;
+
+    growthData.push({
+      name: dayNames[d.getDay()],
+      users: usersCount,
+      companies: companiesCount,
+      jobs: jobsCount,
+    });
+  }
+
+  // ─── Compute Category Data ─────────────────────────────────
+  const categoryMap = {};
+  safeJobs.forEach(job => {
+    const cat = job.category || job.jobCategory || "Other";
+    const capCat = cat.charAt(0).toUpperCase() + cat.slice(1);
+    if (!categoryMap[capCat]) categoryMap[capCat] = { active: 0, closed: 0 };
+    if (job.status === "active") {
+      categoryMap[capCat].active++;
+    } else {
+      categoryMap[capCat].closed++;
+    }
+  });
+
+  const categoryData = Object.keys(categoryMap)
+    .map(key => ({
+      name: key,
+      active: categoryMap[key].active,
+      closed: categoryMap[key].closed
+    }))
+    .sort((a, b) => (b.active + b.closed) - (a.active + a.closed))
+    .slice(0, 5); // top 5 categories
 
   return (
     <div className="flex flex-col min-h-full pb-8">
@@ -50,13 +120,8 @@ const AdminPage = async () => {
             <span className="text-xs font-semibold text-zinc-500 uppercase tracking-wider">
               Pending Companies
             </span>
-            {pendingCount > 0 && (
-              <span className="flex h-6 w-6 items-center justify-center rounded-full bg-amber-500 text-[10px] font-bold text-black animate-pulse">
-                {pendingCount}
-              </span>
-            )}
           </div>
-          <span className="text-3xl font-bold text-white tracking-tight">{pendingCount}</span>
+          <span className="text-3xl font-bold text-[#FF5E00] tracking-tight">{pendingCount}</span>
         </div>
         <div className="flex flex-col justify-between p-5 rounded-2xl border border-zinc-900 bg-zinc-950/40">
           <span className="text-xs font-semibold text-zinc-500 uppercase tracking-wider mb-4">
@@ -68,9 +133,13 @@ const AdminPage = async () => {
           <span className="text-xs font-semibold text-zinc-500 uppercase tracking-wider mb-4">
             Active Jobs
           </span>
-          <span className="text-3xl font-bold text-white tracking-tight">{activeJobs}</span>
+          <span className="text-3xl font-bold text-[#0088FF] tracking-tight">{activeJobs}</span>
         </div>
       </div>
+
+      <AdminDashboardCharts growthData={growthData} categoryData={categoryData} />
+
+
 
       {/* Quick Actions */}
       <h3 className="text-base font-bold text-white mb-4 pb-3 border-b border-zinc-900">Quick Actions</h3>

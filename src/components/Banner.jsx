@@ -1,14 +1,47 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { useRouter } from "next/navigation";
+import { getAllJobs } from "@/lib/api/jobs";
+import { useSession } from "@/lib/auth-client";
 
 export default function Banner() {
   const router = useRouter();
+  const { data: session } = useSession();
   const [keyword, setKeyword] = useState("");
   const [location, setLocation] = useState("");
+  const [trendingPositions, setTrendingPositions] = useState([
+    "Product Designer",
+    "AI Engineering",
+    "Dev-ops Engineer"
+  ]);
+
+  useEffect(() => {
+    const fetchTrending = async () => {
+      try {
+        const jobs = await getAllJobs("active");
+        if (Array.isArray(jobs) && jobs.length > 0) {
+          const counts = {};
+          jobs.forEach(job => {
+            const cat = job.jobCategory || job.category || job.jobTitle || job.title;
+            if (cat) {
+              counts[cat] = (counts[cat] || 0) + 1;
+            }
+          });
+          const sorted = Object.entries(counts).sort((a, b) => b[1] - a[1]);
+          const top3 = sorted.slice(0, 3).map(entry => entry[0]);
+          if (top3.length > 0) {
+            setTrendingPositions(top3);
+          }
+        }
+      } catch (e) {
+        console.error("Failed to fetch jobs for trending positions:", e);
+      }
+    };
+    fetchTrending();
+  }, []);
 
   const handleSearch = (e) => {
     e.preventDefault();
@@ -16,6 +49,10 @@ export default function Banner() {
     if (keyword) params.append("q", keyword);
     if (location) params.append("loc", location);
     router.push(`/browse-jobs?${params.toString()}`);
+  };
+
+  const handleTrendingClick = (trendingKeyword) => {
+    router.push(`/browse-jobs?q=${encodeURIComponent(trendingKeyword)}`);
   };
 
   const containerVariants = {
@@ -48,63 +85,54 @@ export default function Banner() {
       opacity: [0.6, 0.85, 0.6],
       x: [0, 15, 0],
       y: [0, -15, 0],
-      transition: {
-        duration: 10,
-        repeat: Infinity,
-        repeatType: "mirror",
-        ease: "easeInOut",
-      },
+      transition: { duration: 8, repeat: Infinity, ease: "easeInOut" },
     },
   };
 
   const glowVariants2 = {
     animate: {
       scale: [1, 1.2, 1],
-      opacity: [0.4, 0.7, 0.4],
+      opacity: [0.5, 0.7, 0.5],
       x: [0, -20, 0],
       y: [0, 20, 0],
-      transition: {
-        duration: 12,
-        repeat: Infinity,
-        repeatType: "mirror",
-        ease: "easeInOut",
-      },
+      transition: { duration: 10, repeat: Infinity, ease: "easeInOut", delay: 1 },
     },
   };
 
   return (
-    <div className="relative min-h-[85vh] flex flex-col justify-center items-center overflow-hidden px-4 sm:px-6 lg:px-8 py-20 bg-black">
+    <div className="relative w-full min-h-[90vh] bg-[#09090b] flex items-center justify-center overflow-hidden">
       
-      {/* Background radial glowing ambient glows */}
-      <motion.div 
-        variants={glowVariants1}
-        animate="animate"
-        viewport={{ once: false }}
-        className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-[#0088FF]/10 rounded-full blur-[120px] pointer-events-none" 
-      />
-      <motion.div 
-        variants={glowVariants2}
-        animate="animate"
-        viewport={{ once: false }}
-        className="absolute bottom-1/4 left-1/3 -translate-y-1/2 w-[400px] h-[400px] bg-[#FF5E00]/5 rounded-full blur-[100px] pointer-events-none" 
-      />
-      
-      {/* Premium subtle background grid pattern */}
-      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,rgba(255,255,255,0.02),transparent_50%)] pointer-events-none" />
-      
-      <motion.div 
+      {/* Background Ambient Glows */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <motion.div
+          variants={glowVariants1}
+          animate="animate"
+          className="absolute top-[10%] left-[20%] w-[40vw] h-[40vw] rounded-full bg-gradient-to-br from-[#0088FF]/10 to-transparent blur-[120px]"
+        />
+        <motion.div
+          variants={glowVariants2}
+          animate="animate"
+          className="absolute bottom-[10%] right-[10%] w-[35vw] h-[35vw] rounded-full bg-gradient-to-tl from-[#FF5E00]/10 to-transparent blur-[100px]"
+        />
+        
+        {/* Subtle Grid Overlay */}
+        <div 
+          className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.02)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.02)_1px,transparent_1px)]"
+          style={{ backgroundSize: '40px 40px', opacity: 0.5 }}
+        />
+      </div>
+
+      <motion.div
         variants={containerVariants}
         initial="hidden"
-        whileInView="visible"
-        viewport={{ once: false }}
-        className="relative z-10 w-full max-w-5xl mx-auto flex flex-col items-center text-center"
+        animate="visible"
+        className="relative z-10 w-full max-w-5xl mx-auto flex flex-col items-center text-center px-4"
       >
         
         {/* Glowing Announcement Badge */}
         <motion.div 
           variants={itemVariants}
           whileHover={{ scale: 1.03 }}
-          viewport={{ once: false }}
           className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-zinc-900/80 border border-zinc-800 backdrop-blur-md mb-8 shadow-[0_4px_20px_rgba(0,0,0,0.3)] cursor-default"
         >
           <span className="flex h-2 w-2 relative">
@@ -225,27 +253,17 @@ export default function Banner() {
           {/* Trending Positions */}
           <div className="flex flex-wrap items-center justify-center gap-3 mt-8">
             <span className="text-zinc-500 text-sm font-normal mr-1">Trending Position</span>
-            <motion.button 
-              whileHover={{ scale: 1.05, borderColor: "rgba(0,136,255,0.4)", color: "#ffffff" }}
-              whileTap={{ scale: 0.95 }}
-              className="px-4 py-1.5 rounded-full border border-zinc-800 bg-zinc-950/40 text-zinc-300 hover:bg-zinc-900/10 transition-all duration-300 text-[13px] cursor-pointer"
-            >
-              Product Designer
-            </motion.button>
-            <motion.button 
-              whileHover={{ scale: 1.05, borderColor: "rgba(255,94,0,0.4)", color: "#ffffff" }}
-              whileTap={{ scale: 0.95 }}
-              className="px-4 py-1.5 rounded-full border border-zinc-800 bg-zinc-950/40 text-zinc-300 hover:bg-zinc-900/10 transition-all duration-300 text-[13px] cursor-pointer"
-            >
-              AI Engineering
-            </motion.button>
-            <motion.button 
-              whileHover={{ scale: 1.05, borderColor: "rgba(0,136,255,0.4)", color: "#ffffff" }}
-              whileTap={{ scale: 0.95 }}
-              className="px-4 py-1.5 rounded-full border border-zinc-800 bg-zinc-950/40 text-zinc-300 hover:bg-zinc-900/10 transition-all duration-300 text-[13px] cursor-pointer"
-            >
-              Dev-ops Engineer
-            </motion.button>
+            {trendingPositions.map((position, idx) => (
+              <motion.button 
+                key={idx}
+                onClick={() => handleTrendingClick(position)}
+                whileHover={{ scale: 1.05, borderColor: idx === 1 ? "rgba(255,94,0,0.4)" : "rgba(0,136,255,0.4)", color: "#ffffff" }}
+                whileTap={{ scale: 0.95 }}
+                className="px-4 py-1.5 rounded-full border border-zinc-800 bg-zinc-950/40 text-zinc-300 hover:bg-zinc-900/10 transition-all duration-300 text-[13px] cursor-pointer"
+              >
+                {position}
+              </motion.button>
+            ))}
           </div>
         </motion.div>
 
@@ -257,7 +275,7 @@ export default function Banner() {
             whileTap={{ scale: 0.98 }}
           >
             <Link
-              href="#"
+              href="/browse-jobs"
               className="inline-flex items-center justify-center w-full px-8 py-3.5 text-base font-semibold text-white bg-gradient-to-r from-[#0088FF] to-[#0055FF] rounded-xl hover:from-[#339FFF] hover:to-[#2277FF] shadow-[0_8px_25px_rgba(0,136,255,0.3)] hover:shadow-[0_10px_30px_rgba(0,136,255,0.45)] transition-all duration-300"
             >
               Explore Hot Jobs
@@ -268,12 +286,21 @@ export default function Banner() {
             whileHover={{ scale: 1.02, y: -2 }}
             whileTap={{ scale: 0.98 }}
           >
-            <Link
-              href="/dashboard/recruiter/jobs/new"
-              className="inline-flex items-center justify-center w-full px-8 py-3.5 text-base font-semibold text-zinc-300 bg-zinc-950/40 border border-zinc-800 hover:border-[#FF5E00]/40 hover:text-white rounded-xl backdrop-blur-md transition-all duration-300 hover:shadow-[0_6px_20px_rgba(255,94,0,0.15)]"
-            >
-              Post a Job
-            </Link>
+            {session?.user?.role === "seeker" ? (
+              <Link
+                href="/dashboard/seeker"
+                className="inline-flex items-center justify-center w-full px-8 py-3.5 text-base font-semibold text-zinc-300 bg-zinc-950/40 border border-zinc-800 hover:border-[#0088FF]/40 hover:text-white rounded-xl backdrop-blur-md transition-all duration-300 hover:shadow-[0_6px_20px_rgba(0,136,255,0.15)]"
+              >
+                My Dashboard
+              </Link>
+            ) : (
+              <Link
+                href="/dashboard/recruiter/jobs/new"
+                className="inline-flex items-center justify-center w-full px-8 py-3.5 text-base font-semibold text-zinc-300 bg-zinc-950/40 border border-zinc-800 hover:border-[#FF5E00]/40 hover:text-white rounded-xl backdrop-blur-md transition-all duration-300 hover:shadow-[0_6px_20px_rgba(255,94,0,0.15)]"
+              >
+                Post a Job
+              </Link>
+            )}
           </motion.div>
         </div>
 

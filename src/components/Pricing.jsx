@@ -182,32 +182,42 @@ export default function Pricing({ embedded = false }) {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 md:gap-6 lg:gap-8 items-stretch max-w-6xl mx-auto mb-24">
+        <AnimatePresence mode="wait">
           {loading ? (
-             <div className="col-span-1 md:col-span-3 flex justify-center py-20">
-                <div className="w-10 h-10 border-4 border-[#0088FF] border-t-transparent rounded-full animate-spin"></div>
-             </div>
+            <motion.div 
+              key="loading" 
+              initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+              className="flex justify-center py-20 w-full max-w-6xl mx-auto mb-24"
+            >
+              <div className="w-10 h-10 border-4 border-[#0088FF] border-t-transparent rounded-full animate-spin"></div>
+            </motion.div>
           ) : (
-          <AnimatePresence mode="wait">
-            {currentPlans.map((plan, index) => (
-              <motion.div
-                key={activeTab + plan.name}
-                initial={{ opacity: 0, y: 30, scale: 0.95 }}
-                animate={{ opacity: 1, y: 0, scale: 1 }}
-                exit={{ opacity: 0, y: -20, scale: 0.95 }}
-                transition={{
-                  delay: index * 0.1,
-                  type: "spring",
-                  stiffness: 80,
-                  duration: 0.4,
-                }}
-                className={`relative bg-[#121214]/80 backdrop-blur-xl border rounded-3xl p-8 flex flex-col transition-all hover:-translate-y-2 duration-300 ${
-                  plan.popular
-                    ? "border-[#0088FF]/50 shadow-[0_0_40px_rgba(0,136,255,0.15)] md:scale-105 z-10"
-                    : "border-zinc-800 opacity-90 hover:opacity-100"
-                }`}
-              >
-                {plan.popular && (
+            <motion.div 
+              key={activeTab}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0, y: -20 }}
+              transition={{ duration: 0.3 }}
+              className="grid grid-cols-1 md:grid-cols-3 gap-8 md:gap-6 lg:gap-8 items-stretch max-w-6xl mx-auto mb-24 w-full"
+            >
+              {currentPlans.map((plan, index) => (
+                <motion.div
+                  key={plan.name}
+                  initial={{ opacity: 0, y: 30, scale: 0.95 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  transition={{
+                    delay: index * 0.1,
+                    type: "spring",
+                    stiffness: 80,
+                    duration: 0.4,
+                  }}
+                  className={`relative bg-[#121214]/80 backdrop-blur-xl border rounded-3xl p-8 flex flex-col transition-all hover:-translate-y-2 duration-300 ${
+                    plan.popular
+                      ? "border-[#0088FF]/50 shadow-[0_0_40px_rgba(0,136,255,0.15)] md:scale-105 z-10"
+                      : "border-zinc-800 opacity-90 hover:opacity-100"
+                  }`}
+                >
+                  {plan.popular && (
                   <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-gradient-to-r from-[#0088FF] to-[#0055FF] text-white text-xs font-bold uppercase tracking-wider py-1.5 px-4 rounded-full shadow-lg whitespace-nowrap">
                     Most Popular
                   </div>
@@ -283,9 +293,9 @@ export default function Pricing({ embedded = false }) {
                 )}
               </motion.div>
             ))}
-          </AnimatePresence>
+            </motion.div>
           )}
-        </div>
+        </AnimatePresence>
 
         {/* FAQ Section */}
         <div className="max-w-3xl mx-auto mt-20">

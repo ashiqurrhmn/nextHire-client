@@ -100,7 +100,7 @@ export default function Banner() {
   };
 
   return (
-    <div className="relative w-full min-h-[90vh] bg-[#09090b] flex items-center justify-center overflow-hidden">
+    <div className="relative w-full min-h-[90vh] bg-transparent flex items-center justify-center overflow-hidden">
       
       {/* Background Ambient Glows */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
@@ -117,8 +117,8 @@ export default function Banner() {
         
         {/* Subtle Grid Overlay */}
         <div 
-          className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.02)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.02)_1px,transparent_1px)]"
-          style={{ backgroundSize: '40px 40px', opacity: 0.5 }}
+          className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.05)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.05)_1px,transparent_1px)]"
+          style={{ backgroundSize: '40px 40px', opacity: 0.8 }}
         />
       </div>
 

@@ -1,51 +1,44 @@
 "use client";
 
+import { useEffect } from "react";
 import { motion } from "framer-motion";
 import Link from "next/link";
-import { Button } from "@heroui/react";
-import { useSession } from "@/lib/auth-client";
 
-export default function UnauthorizedPage() {
-  const { data: session } = useSession();
-  const user = session?.user;
-
-  const dashboardHref = user
-    ? user.role === "admin"
-      ? "/dashboard/admin"
-      : user.role === "recruiter"
-        ? "/dashboard/recruiter"
-        : "/dashboard/seeker"
-    : "/auth/signin";
+export default function Error({ error, reset }) {
+  useEffect(() => {
+    console.error("Application error:", error);
+  }, [error]);
 
   return (
-    <div className="bg-black min-h-screen grow flex flex-col items-center justify-center px-4 relative overflow-hidden">
+    <div className="bg-black min-h-[90vh] grow flex flex-col items-center justify-center px-4 relative overflow-hidden">
       {/* Ambient background glow */}
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-red-500/[0.08] rounded-full blur-[120px] pointer-events-none" />
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-[#FF5E00]/[0.08] rounded-full blur-[120px] pointer-events-none" />
 
       <motion.div
         initial={{ opacity: 0, scale: 0.95, y: 20 }}
         animate={{ opacity: 1, scale: 1, y: 0 }}
         transition={{ type: "spring", stiffness: 80, damping: 15 }}
-        className="relative z-10 w-full max-w-md flex flex-col items-center text-center bg-[#121214]/80 backdrop-blur-xl border border-zinc-800/80 rounded-[32px] p-10 sm:p-12 shadow-[0_20px_80px_rgba(239,68,68,0.1)]"
+        className="relative z-10 w-full max-w-md flex flex-col items-center text-center bg-[#121214]/80 backdrop-blur-xl border border-zinc-800/80 rounded-[32px] p-10 sm:p-12 shadow-[0_20px_80px_rgba(255,94,0,0.1)]"
       >
         <motion.div
           initial={{ scale: 0 }}
           animate={{ scale: 1 }}
           transition={{ type: "spring", stiffness: 100, damping: 10, delay: 0.1 }}
-          className="w-24 h-24 mb-8 flex items-center justify-center rounded-[24px] bg-red-500/10 border border-red-500/20 shadow-[0_0_40px_rgba(239,68,68,0.2)]"
+          className="w-24 h-24 mb-8 flex items-center justify-center rounded-[24px] bg-[#FF5E00]/10 border border-[#FF5E00]/20 shadow-[0_0_40px_rgba(255,94,0,0.2)]"
         >
           <svg 
             xmlns="http://www.w3.org/2000/svg" 
             viewBox="0 0 24 24" 
             fill="none" 
             stroke="currentColor" 
-            className="w-12 h-12 text-red-500"
+            className="w-12 h-12 text-[#FF5E00]"
             strokeWidth="2" 
             strokeLinecap="round" 
             strokeLinejoin="round"
           >
-            <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
-            <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+            <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
+            <line x1="12" y1="9" x2="12" y2="13"></line>
+            <line x1="12" y1="17" x2="12.01" y2="17"></line>
           </svg>
         </motion.div>
 
@@ -55,7 +48,7 @@ export default function UnauthorizedPage() {
           transition={{ delay: 0.2 }}
           className="text-3xl sm:text-4xl font-extrabold text-white mb-4 tracking-tight"
         >
-          Access Denied
+          Something went wrong
         </motion.h1>
 
         <motion.p
@@ -64,7 +57,7 @@ export default function UnauthorizedPage() {
           transition={{ delay: 0.3 }}
           className="text-zinc-400 text-base sm:text-lg mb-10 leading-relaxed"
         >
-          You do not have the required permissions to view this page. Please ensure you are logged in with the correct account role.
+          We hit an unexpected snag while processing your request. Don't worry, we've been notified.
         </motion.p>
 
         <motion.div
@@ -79,12 +72,12 @@ export default function UnauthorizedPage() {
           >
             Go to Home
           </Link>
-          <Link
-            href={dashboardHref}
-            className="flex flex-1 items-center justify-center h-12 rounded-[14px] bg-gradient-to-r from-red-600 to-red-500 hover:from-red-500 hover:to-red-400 text-white font-bold text-sm shadow-[0_4px_14px_rgba(239,68,68,0.3)] transition-all"
+          <button
+            onClick={() => reset()}
+            className="flex flex-1 items-center justify-center h-12 rounded-[14px] bg-gradient-to-r from-[#FF5E00] to-[#FFA000] hover:from-[#FFA000] hover:to-[#FFB000] text-white font-bold text-sm shadow-[0_4px_14px_rgba(255,94,0,0.3)] transition-all cursor-pointer border-0"
           >
-            {user ? "My Dashboard" : "Sign In"}
-          </Link>
+            Try Again
+          </button>
         </motion.div>
       </motion.div>
     </div>

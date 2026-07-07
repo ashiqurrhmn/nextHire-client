@@ -339,7 +339,7 @@ npm run dev
 ```env
 # MongoDB connection (used by Better Auth)
 MONGODB_URI=mongodb+srv://<user>:<password>@<cluster>.mongodb.net
-AUTH_DB_NAME=next-hire-auth
+AUTH_DB_NAME=dbname
 
 # Better Auth
 BETTER_AUTH_SECRET=your-secret-key
@@ -358,7 +358,7 @@ NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=pk_test_...
 ```env
 # MongoDB
 MONGODB_URI=mongodb+srv://<user>:<password>@<cluster>.mongodb.net
-DB_NAME=next-hire-auth
+DB_NAME=dbname
 
 # CORS
 CLIENT_URL=http://localhost:3000

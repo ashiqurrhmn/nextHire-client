@@ -3,12 +3,11 @@ import { serverFetch } from "../core/server";
 const baseUrl = process.env.NEXT_PUBLIC_BASE_URL;
 
 export const getCompanyJobs = async (companyId, status = "") => {
-  let url = `${baseUrl}/api/jobs?companyId=${companyId}`;
+  let url = `/api/jobs?companyId=${companyId}`;
   if (status && status !== "all") {
     url += `&status=${status}`;
   }
-  const res = await fetch(url);
-  return res.json();
+  return serverFetch(url);
 };
 
 export const getAllJobs = async (status = "") => {

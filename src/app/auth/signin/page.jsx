@@ -38,6 +38,7 @@ export default function SignInPage() {
       
       const params = new URLSearchParams(window.location.search);
       const redirectUrl = params.get("redirect");
+      router.refresh();
       router.push(redirectUrl || "/");
     } catch (error) {
       setErrorMessage(error?.message || "Could not sign in.");

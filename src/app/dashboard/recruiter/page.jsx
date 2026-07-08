@@ -111,14 +111,6 @@ export default async function RecruiterDashboardPage() {
         Welcome back, {userName}
       </h2>
 
-      {debugError && (
-        <div className="bg-red-500/10 border border-red-500/50 text-red-500 p-4 rounded-xl mb-6">
-          <strong>Debug Error:</strong> {debugError}
-          <br/>
-          <strong>Base URL:</strong> {process.env.NEXT_PUBLIC_BASE_URL}
-        </div>
-      )}
-
       {/* Stats Section Cards */}
       <StatsSection
         totalJobs={totalJobs}

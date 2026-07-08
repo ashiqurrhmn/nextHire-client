@@ -14,26 +14,33 @@ export default async function RecruiterDashboardPage() {
   const user = await getUserSession();
   const userName = user?.name || "Recruiter";
   
-  // Fetch companies for this recruiter
-  const companies = user ? await getCompanyByUser(user.id) : [];
-  
-  // Fetch jobs, applications and views for the first company
+  let companies = [];
   let applications = [];
   let jobs = [];
   let views = [];
-  if (companies && companies.length > 0) {
-    const companyId = companies[0].id || companies[0]._id;
-    [applications, jobs, views] = await Promise.all([
-      getCompanyApplications(companyId),
-      getCompanyJobs(companyId),
-      getCompanyJobViews(companyId)
-    ]);
+
+  try {
+    // Fetch companies for this recruiter
+    companies = user ? await getCompanyByUser(user.id) : [];
+    
+    // Fetch jobs, applications and views for the first company
+    if (Array.isArray(companies) && companies.length > 0) {
+      const companyId = companies[0].id || companies[0]._id;
+      [applications, jobs, views] = await Promise.all([
+        getCompanyApplications(companyId),
+        getCompanyJobs(companyId),
+        getCompanyJobViews(companyId)
+      ]);
+    }
+  } catch (e) {
+    console.error("Failed to fetch recruiter dashboard data:", e);
   }
 
   // Ensure arrays
   const safeApps = Array.isArray(applications) ? applications : [];
   const safeJobs = Array.isArray(jobs) ? jobs : [];
   const safeViews = Array.isArray(views) ? views : [];
+  const safeCompanies = Array.isArray(companies) ? companies : [];
 
   // ─── Compute Stats ─────────────────────────────────────────
   const totalJobs = safeJobs.length;
@@ -106,8 +113,8 @@ export default async function RecruiterDashboardPage() {
 
       {/* Bottom Main Content Columns */}
       <div className="flex flex-col lg:flex-row gap-6 mb-8 items-stretch">
-        <RecentApplications applications={applications} />
-        <TopCompanies companies={companies} />
+        <RecentApplications applications={safeApps} />
+        <TopCompanies companies={safeCompanies} />
       </div>
 
       {/* Floating Action Button */}

@@ -18,22 +18,33 @@ export default async function RecruiterDashboardPage() {
   let applications = [];
   let jobs = [];
   let views = [];
+  let debugError = null;
 
   try {
     // Fetch companies for this recruiter
     companies = user ? await getCompanyByUser(user.id) : [];
     
+    // Check if companies is an error object
+    if (companies && companies.error) {
+      debugError = `API Error: ${companies.error}`;
+    }
+
     // Fetch jobs, applications and views for the first company
     if (Array.isArray(companies) && companies.length > 0) {
       const companyId = companies[0].id || companies[0]._id;
-      [applications, jobs, views] = await Promise.all([
+      const [appsRes, jobsRes, viewsRes] = await Promise.all([
         getCompanyApplications(companyId),
         getCompanyJobs(companyId),
         getCompanyJobViews(companyId)
       ]);
+      
+      applications = appsRes;
+      jobs = jobsRes;
+      views = viewsRes;
     }
   } catch (e) {
     console.error("Failed to fetch recruiter dashboard data:", e);
+    debugError = `Exception: ${e.message}`;
   }
 
   // Ensure arrays
@@ -99,6 +110,14 @@ export default async function RecruiterDashboardPage() {
       <h2 className="text-3xl font-bold text-white tracking-tight mb-6">
         Welcome back, {userName}
       </h2>
+
+      {debugError && (
+        <div className="bg-red-500/10 border border-red-500/50 text-red-500 p-4 rounded-xl mb-6">
+          <strong>Debug Error:</strong> {debugError}
+          <br/>
+          <strong>Base URL:</strong> {process.env.NEXT_PUBLIC_BASE_URL}
+        </div>
+      )}
 
       {/* Stats Section Cards */}
       <StatsSection
